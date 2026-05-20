@@ -4,6 +4,7 @@ import { AdminLayoutComponent } from './pages/admin-layout/admin-layout.componen
 import { LoginPageComponent } from './pages/login/login-page.component';
 import { DashboardPageComponent } from './pages/dashboard/dashboard-page.component';
 import { ProductListPageComponent } from './pages/product-list/product-list-page.component';
+import { PlaceholderPageComponent } from './pages/placeholder/placeholder-page.component';
 
 export const routes: Routes = [
   {
@@ -27,6 +28,21 @@ export const routes: Routes = [
       {
         path: 'products',
         component: ProductListPageComponent,
+      },
+      {
+        path: 'counterparties',
+        component: PlaceholderPageComponent,
+        data: { title: 'Контрагенты' },
+      },
+      {
+        path: 'kp',
+        component: PlaceholderPageComponent,
+        data: { title: 'Коммерческие предложения' },
+      },
+      {
+        path: 'settings',
+        component: PlaceholderPageComponent,
+        data: { title: 'Настройки' },
       },
     ],
   },
