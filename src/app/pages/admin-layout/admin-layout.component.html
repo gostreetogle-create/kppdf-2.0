@@ -43,7 +43,7 @@
       <div class="layout__header-right">
         @if (authStore.user(); as user) {
           <span class="layout__user-name">{{ user.displayName }}</span>
-          <p-avatar label="{{ user.displayName[0] }}" styleClass="layout__user-avatar" shape="circle" size="large" />
+          <p-avatar [label]="(user.displayName || '?')[0]" styleClass="layout__user-avatar" shape="circle" size="large" />
         }
       </div>
     </header>
