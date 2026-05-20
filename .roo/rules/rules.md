@@ -17,7 +17,7 @@
 1. **Микро-архитектура**: `core/` → `shared/` → `entities/` → `features/` → `pages/`.
 2. **Angular 21+**: Standalone components, Signals, inject() — без NgModules, без constructor DI.
 3. **Строгая типизация**: `any` запрещён, все модели — интерфейсы с чёткими полями.
-4. **SCSS + BEM**: Никакого inline-styling. Только SCSS в отдельных файлах, BEM-именование.
+4. **SCSS + BEM**: Никакого inline-styling. Только SCSS в отдельных файлах, BEM-именование (только для layout).
 5. **Состояние**: Только Signals. NGRX не используется.
 
 > Все новые файлы и компоненты должны строго следовать этим правилам. Нарушения запрещены.

@@ -25,6 +25,7 @@ ng serve                             # Angular на :4200
 | Слой | Технология |
 |------|-----------|
 | Frontend | Angular 21 (Standalone, Signals, OnPush) |
+| UI Kit | PrimeNG 21 + Aura theme + PrimeIcons |
 | Backend | Node.js 20 / Express 4 |
 | Database | MongoDB 7 + Mongoose |
 | Auth | JWT (access 7d + refresh 30d) |

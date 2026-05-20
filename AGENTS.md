@@ -2,7 +2,7 @@
 
 CRM для управления коммерческими предложениями с генерацией PDF.
 
-**Стек**: Angular 21+, Standalone Components, Signals, SCSS + BEM, RxJS (только HTTP).
+**Стек**: Angular 21+, Standalone Components, Signals, SCSS + BEM, PrimeNG + Aura + PrimeIcons, RxJS (только HTTP).
 
 **Архитектура**: `core/` → `shared/` → `entities/` → `features/` → `pages/`
 
@@ -20,7 +20,7 @@ CRM для управления коммерческими предложени�
 
 - **`@guardian`** — проверяет импорты, слои, циклические зависимости
 - **`@reviewer`** — code review: any, DI, NgModule, inline-стили
-- **`@ui-specialist`** — BEM, SCSS, OnPush, Dumb/Smart
+- **`@ui-specialist`** — PrimeNG-компоненты, BEM (только layout), SCSS, OnPush, Dumb/Smart
 - **`@tester`** — генерирует Jasmine/Karma тесты
 - **`@pdf-specialist`** — PDF-генерация (jsPDF, Worker, шаблоны)
 
@@ -58,4 +58,5 @@ CRM для управления коммерческими предложени�
 - `NgModule` (только Standalone)
 - Inline-стили (только SCSS + BEM)
 - Циклические импорты
+- Raw `<button>`/`<input>`/`<table>` (только PrimeNG)
 - `shared/` не может импортировать `entities/`, `features/`, `pages/`, `core/`
