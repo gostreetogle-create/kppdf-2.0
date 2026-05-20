@@ -1,0 +1,82 @@
+<p-toast />
+<p-confirmDialog />
+
+<section class="cparty-list-feature">
+  <header class="cparty-list-feature__header">
+    <h2 class="cparty-list-feature__title">Контрагенты</h2>
+    <p-button label="Создать контрагента" icon="pi pi-plus" severity="success" (click)="onCreate()" />
+  </header>
+
+  <p-table
+    #dt
+    [value]="allItems()"
+    [loading]="loading()"
+    [rows]="20"
+    [paginator]="true"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    [globalFilterFields]="['name', 'inn', 'phone', 'email']"
+    styleClass="p-datatable-sm"
+  >
+    <ng-template pTemplate="caption">
+      <div class="cparty-list-feature__search">
+        <i class="pi pi-search"></i>
+        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Поиск…" />
+      </div>
+    </ng-template>
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="name">Название <p-sortIcon field="name" /></th>
+        <th pSortableColumn="legalForm">Форма <p-sortIcon field="legalForm" /></th>
+        <th pSortableColumn="inn">ИНН <p-sortIcon field="inn" /></th>
+        <th>Роли</th>
+        <th pSortableColumn="phone">Телефон <p-sortIcon field="phone" /></th>
+        <th pSortableColumn="email">Email <p-sortIcon field="email" /></th>
+        <th pSortableColumn="isActive">Статус <p-sortIcon field="isActive" /></th>
+        <th style="width: 120px">Действия</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-item>
+      <tr>
+        <td>
+          <strong>{{ item.name }}</strong>
+          @if (item.shortName) { <br><small>{{ item.shortName }}</small> }
+        </td>
+        <td><p-tag [value]="item.legalForm" [severity]="legalFormColor(item.legalForm)" /></td>
+        <td>{{ item.inn || '—' }}</td>
+        <td>
+          @for (role of item.roles; track role) {
+            <p-tag [value]="roleLabels[role] || role" styleClass="mr-1" />
+          }
+        </td>
+        <td>{{ item.phone || '—' }}</td>
+        <td>{{ item.email || '—' }}</td>
+        <td>
+          <p-tag [value]="item.isActive ? 'Активен' : 'Неактивен'" [severity]="item.isActive ? 'success' : 'danger'" />
+        </td>
+        <td>
+          <div class="cparty-list-feature__actions">
+            <p-button icon="pi pi-pencil" severity="info" [text]="true" [rounded]="true" pTooltip="Редактировать" tooltipPosition="top" (click)="onEdit(item)" />
+            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" pTooltip="Удалить" tooltipPosition="top" (click)="onDelete(item)" />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptydata">
+      <div class="cparty-list-feature__empty">
+        <i class="pi pi-building cparty-list-feature__empty-icon"></i>
+        <p>Контрагенты не найдены</p>
+      </div>
+    </ng-template>
+  </p-table>
+</section>
+
+@if (showDialog()) {
+  <app-counterparty-form-dialog
+    [counterparty]="editingItem()"
+    (saved)="onSave($event)"
+    (cancelled)="onCancelDialog()"
+  />
+}
