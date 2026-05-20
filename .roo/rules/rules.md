@@ -9,6 +9,7 @@
 | [`angular-signals.md`](angular-signals.md) | Angular 21 Signals, строгая типизация, DI через inject(), запрет any |
 | [`architecture-layers.md`](architecture-layers.md) | Структура папок (core, shared, entities, features, pages), правила импортов |
 | [`ui-standards.md`](ui-standards.md) | Standalone, OnPush, SCSS + BEM, Dumb/Smart-компоненты |
+| [`ui-library.md`](ui-library.md) | PrimeNG + Aura + PrimeIcons: установка, импорт, примеры |
 | [`project-context.md`](project-context.md) | Описание проекта KPPDF 2.0, предметная область, ключевые сценарии |
 
 ## Основные принципы

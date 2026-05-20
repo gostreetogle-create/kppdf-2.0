@@ -43,7 +43,7 @@ permission:
 ### Фронтенд
 | Имя | Назначение |
 |---|---|
-| `@ui-specialist` | BEM, SCSS, OnPush, Dumb/Smart-компоненты |
+| `@ui-specialist` | PrimeNG-компоненты, BEM (только layout), SCSS, OnPush, Dumb/Smart |
 | `@pdf-specialist` | PDF-генерация, Puppeteer, jsPDF, шаблоны |
 
 ### Доменные (бизнес-логика)

@@ -1,5 +1,23 @@
 # KPPDF 2.0 — План разработки
 
+## 0. ✅ Установка и настройка PrimeNG (тема Aura, PrimeIcons)
+
+**Дата**: 2026-05-20 — **Выполнено**
+
+### Что сделано:
+1. `npm install primeng @primeuix/themes primeicons` — установлены все три пакета
+2. **`app.config.ts`** — добавлен `providePrimeNG({ theme: { preset: Aura } })` + `provideAnimationsAsync()`
+3. **`angular.json`** — подключён `primeicons/primeicons.css` (тема Aura внедряется через JS, CSS не нужен)
+4. **`.roo/rules/ui-library.md`** — создана документация PrimeNG v21 с примерами
+5. **Агенты обновлены**: `ui-specialist`, `reviewer`, `guardian`, `orchestrator` — все знают про PrimeNG
+6. Сборка пройдена — 0 ошибок
+
+### Дальше:
+- Импортировать компоненты PrimeNG по мере использования (Button, InputText, Table, Dialog и т.д.)
+- В `shared/ui/` создавать только обёртки, если PrimeNG-компонента недостаточно
+
+---
+
 ## 1. Создание базовой структуры папок
 
 ```
@@ -105,6 +123,7 @@ export interface Product {
 | Шаг | Задача | Режим |
 |-----|--------|-------|
 | 0 | ✅ Создать структуру папок и model | `Code` |
+| 0.1 | ✅ Установка PrimeNG (Aura, PrimeIcons) | `UI Specialist` |
 | 1 | 🧱 ProductCardComponent + пайпы | `UI Specialist` |
 | 2 | 🔌 ProductService | `State Manager` |
 | 3 | 📄 ProductListFeature | `Feature Developer` |
