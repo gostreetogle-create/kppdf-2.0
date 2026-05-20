@@ -1,0 +1,30 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    ".roo/rules/rules.md",
+    ".roo/rules/project-context.md",
+    ".roo/rules/architecture-layers.md",
+    ".roo/rules/angular-signals.md",
+    ".roo/rules/ui-standards.md",
+    "plan.md"
+  ],
+  "agent": {
+    "orchestrator": {
+      "description": "Оркестратор — распределяет задачи между специализированными агентами",
+      "mode": "primary",
+      "prompt": "{file:.opencode/agents/orchestrator.md}",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow",
+        "task": {
+          "guardian": "allow",
+          "reviewer": "allow",
+          "ui-specialist": "allow",
+          "tester": "allow",
+          "pdf-specialist": "allow",
+          "*": "deny"
+        }
+      }
+    }
+  }
+}

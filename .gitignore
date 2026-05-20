@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+
+# Angular cache
+.angular/cache/
+
+# IDE metadata
+.roopik/
+.vscode/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# environment files
+*.env
+.env.local

@@ -1,0 +1,46 @@
+@if (loading()) {
+  <div class="product-list-feature__loading">
+    <div class="product-list-feature__spinner"></div>
+    <p class="product-list-feature__loading-text">Загрузка товаров…</p>
+  </div>
+} @else if (error(); as errorMessage) {
+  <div class="product-list-feature__error">
+    <p class="product-list-feature__error-text">{{ errorMessage }}</p>
+  </div>
+} @else {
+  <section class="product-list-feature">
+    <header class="product-list-feature__header">
+      <h2 class="product-list-feature__title">Товары и услуги</h2>
+
+      <div class="product-list-feature__filters">
+        @for (kind of kinds; track kind.value) {
+          <button
+            class="product-list-feature__filter-btn"
+            [class.product-list-feature__filter-btn--active]="selectedKind() === kind.value"
+            type="button"
+            (click)="setKind(kind.value)"
+          >
+            {{ kind.label }}
+          </button>
+        }
+      </div>
+    </header>
+
+    @if (isEmpty()) {
+      <div class="product-list-feature__empty">
+        <p class="product-list-feature__empty-text">
+          {{ hasFiltered() ? 'Нет товаров в выбранной категории' : 'Список товаров пуст' }}
+        </p>
+      </div>
+    } @else {
+      <div class="product-list-feature__grid">
+        @for (product of filteredProducts(); track product.id) {
+          <app-product-card
+            [product]="product"
+            (clicked)="onProductClick(product.id)"
+          />
+        }
+      </div>
+    }
+  </section>
+}

@@ -1,0 +1,32 @@
+<button
+  class="product-card"
+  type="button"
+  (click)="clicked.emit(product())"
+>
+  <div class="product-card__image-wrapper">
+    @if (product().images.length > 0) {
+      <img
+        class="product-card__image"
+        [src]="product().images[0]"
+        [alt]="product().name"
+        loading="lazy"
+      />
+    } @else {
+      <div class="product-card__image-placeholder">
+        <span class="product-card__image-placeholder-text">Нет изображения</span>
+      </div>
+    }
+  </div>
+
+  <div class="product-card__body">
+    <h3 class="product-card__title">{{ product().name }}</h3>
+
+    <span class="product-card__kind">
+      {{ product().kind | productKindLabel }}
+    </span>
+
+    <span class="product-card__price">
+      {{ product().price | price }}
+    </span>
+  </div>
+</button>
