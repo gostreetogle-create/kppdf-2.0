@@ -1,5 +1,25 @@
 # KPPDF 2.0 — Архитектура
 
+## Быстрый старт (локальная разработка)
+
+```bash
+# 1. Запустить MongoDB
+mongod
+
+# 2. В терминале 1 — бэкенд
+cd backend
+cp .env.example .env
+npm install
+npx tsx src/scripts/seed-admin.ts   # создать админа
+npm run dev                          # Express на :3000
+
+# 3. В терминале 2 — фронтенд
+# Из корня проекта (там лежит angular.json)
+ng serve                             # Angular на :4200
+```
+
+**Важно:** `proxy.conf.json` в корне перенаправляет `/api/*` из `localhost:4200` в `localhost:3000`. Без него — ошибка `"<!doctype html>" is not valid JSON`.
+
 ## Стек
 
 | Слой | Технология |

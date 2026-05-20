@@ -9,6 +9,8 @@
 - `backend/src/modules/*/` — контроллеры + роуты
 - `src/app/core/api/` — фронтенд ApiService + auth.interceptor
 - `src/app/shared/types/` — локальные копии для Angular (из-за esbuild ограничений)
+- `proxy.conf.json` — прокси для локальной разработки (ng serve → localhost:3000)
+- `environment.ts` — apiBaseUrl (всегда относительный путь `/api/v1`, не localhost)
 
 ## Правила
 - `shared/types/` — единственный source of truth для интерфейсов
@@ -19,6 +21,14 @@
 - Пагинация: `?limit=20&offset=0`
 - При изменении контракта проверять `tsc --noEmit` в backend/ и `ng build` в frontend/
 - Http статусы: 200, 201, 204, 400, 401, 403, 404, 409, 429, 500
+
+## Локальная разработка
+- `environment.ts` использует относительный путь `/api/v1`, **не localhost:3000**
+- Без прокси `ng serve` не умеет ходить в бэкенд
+- `proxy.conf.json` в корне проекта настраивает перенаправление `/api/*` и `/health` → `localhost:3000`
+- `angular.json` → `serve.options.proxyConfig` ссылается на `proxy.conf.json`
+- Без этого фронтенд получит `index.html` вместо JSON — ошибка `"<!doctype html>" is not valid JSON`
+- При создании нового API-маршрута проверить, что он либо попадает под `/api/*` в proxy.conf.json, либо добавлен отдельно
 
 ## Границы
 - Не изменяет бизнес-логику модулей
