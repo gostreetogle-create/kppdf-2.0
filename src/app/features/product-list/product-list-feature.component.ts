@@ -1,4 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { MessageModule } from 'primeng/message';
 import { ProductKind } from '../../entities/product/models/product.model';
 import { ProductService } from '../../entities/product/data-access/product.service';
 import { ProductCardComponent } from '../../entities/product/ui/product-card/product-card.component';
@@ -6,7 +10,7 @@ import { ProductCardComponent } from '../../entities/product/ui/product-card/pro
 @Component({
   selector: 'app-product-list-feature',
   standalone: true,
-  imports: [ProductCardComponent],
+  imports: [FormsModule, SelectButtonModule, ProgressSpinnerModule, MessageModule, ProductCardComponent],
   templateUrl: './product-list-feature.component.html',
   styleUrls: ['./product-list-feature.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -15,7 +19,7 @@ export class ProductListFeatureComponent {
   private readonly productService = inject(ProductService);
 
   readonly selectedKind = signal<ProductKind | 'ALL'>('ALL');
-  readonly kinds: { value: ProductKind | 'ALL'; label: string }[] = [
+  readonly kindOptions = [
     { value: 'ALL', label: 'Все' },
     { value: 'ITEM', label: 'Товары' },
     { value: 'SERVICE', label: 'Услуги' },
@@ -42,7 +46,7 @@ export class ProductListFeatureComponent {
   readonly isEmpty = computed(() => !this.loading() && this.filteredProducts().length === 0);
   readonly hasFiltered = computed(() => this.selectedKind() !== 'ALL');
 
-  setKind(kind: ProductKind | 'ALL'): void {
+  onKindChange(kind: ProductKind | 'ALL'): void {
     this.selectedKind.set(kind);
   }
 
