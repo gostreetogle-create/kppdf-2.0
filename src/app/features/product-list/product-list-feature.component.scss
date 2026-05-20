@@ -18,6 +18,13 @@
     gap: 12px;
   }
 
+  &__header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
   &__title {
     margin: 0;
     font-size: 22px;
@@ -25,10 +32,28 @@
     color: #1e293b;
   }
 
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 16px;
+  &__search {
+    position: relative;
+
+    i {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    input {
+      padding-left: 32px;
+      width: 280px;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
   }
 
   &__empty {
@@ -41,11 +66,6 @@
 
     &-icon {
       font-size: 48px;
-    }
-
-    &-text {
-      margin: 0;
-      font-size: 15px;
     }
   }
 }

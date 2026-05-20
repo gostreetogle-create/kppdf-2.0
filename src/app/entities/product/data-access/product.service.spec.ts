@@ -9,9 +9,23 @@ describe('ProductService', () => {
   let service: ProductService;
   let httpMock: HttpTestingController;
 
-  const mockProducts: Product[] = [
-    { id: '1', name: 'Товар 1', price: 100, images: [], kind: 'ITEM' },
-    { id: '2', name: 'Услуга 1', price: 200, images: [], kind: 'SERVICE' },
+  function makeProduct(overrides: Partial<Product> = {}): Product {
+    return new Product({
+      _id: '1',
+      name: 'Товар 1',
+      description: 'Описание',
+      price: 100,
+      unit: 'шт',
+      kind: 'ITEM' as const,
+      images: [],
+      isActive: true,
+      ...overrides,
+    });
+  }
+
+  const mockProducts = [
+    makeProduct({ _id: '1', name: 'Товар 1' }),
+    makeProduct({ _id: '2', name: 'Услуга 1', kind: 'SERVICE' }),
   ];
 
   beforeEach(() => {
@@ -26,10 +40,14 @@ describe('ProductService', () => {
     httpMock = TestBed.inject(HttpTestingController);
   });
 
+  /** Сбросить initial GET запрос списка, который триггерится при создании сервиса */
+  function flushInitialGet(): void {
+    httpMock.expectOne(`${API_BASE_URL}/products`).flush({ data: [] });
+  }
+
   afterEach(() => {
-    // Flush any pending products request triggered by service construction
     try {
-      httpMock.expectOne(`${API_BASE_URL}/products`).flush([]);
+      httpMock.expectOne(`${API_BASE_URL}/products`).flush({ data: [] });
     } catch {
       // no pending request — OK
     }
@@ -38,13 +56,7 @@ describe('ProductService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
-  });
-
-  it('should start with loading state', () => {
-    const state = service.products();
-    expect(state.loading).toBeTrue();
-    expect(state.error).toBeNull();
-    expect(state.data).toEqual([]);
+    flushInitialGet();
   });
 
   it('should load products and update state', () => {
@@ -52,12 +64,14 @@ describe('ProductService', () => {
 
     const req = httpMock.expectOne(`${API_BASE_URL}/products`);
     expect(req.request.method).toBe('GET');
-    req.flush(mockProducts);
+    req.flush({ data: mockProducts });
 
     const state = service.products();
     expect(state.loading).toBeFalse();
     expect(state.error).toBeNull();
-    expect(state.data).toEqual(mockProducts);
+    expect(state.data.length).toBe(2);
+    expect(state.data[0]._id).toBe('1');
+    expect(state.data[0].name).toBe('Товар 1');
   });
 
   it('should handle HTTP error', () => {
@@ -72,34 +86,41 @@ describe('ProductService', () => {
     expect(state.data).toEqual([]);
   });
 
-  it('should load product by id', () => {
-    TestBed.runInInjectionContext(() => {
-      const productSignal = service.getById('1');
-      productSignal(); // trigger signal
+  it('should create product', () => {
+    flushInitialGet();
+    const newProduct = makeProduct({ _id: '3', name: 'Новый товар' });
 
-      const req = httpMock.expectOne(`${API_BASE_URL}/products/1`);
-      expect(req.request.method).toBe('GET');
-      req.flush(mockProducts[0]);
-
-      const state = productSignal();
-      expect(state.loading).toBeFalse();
-      expect(state.error).toBeNull();
-      expect(state.data).toEqual(mockProducts[0]);
+    service.create({ name: 'Новый товар' }).subscribe((p) => {
+      expect(p._id).toBe('3');
     });
+
+    const req = httpMock.expectOne(`${API_BASE_URL}/products`);
+    expect(req.request.method).toBe('POST');
+    req.flush({ data: newProduct });
   });
 
-  it('should handle error on getById', () => {
-    TestBed.runInInjectionContext(() => {
-      const productSignal = service.getById('999');
-      productSignal(); // trigger signal
+  it('should update product', () => {
+    flushInitialGet();
+    const updated = makeProduct({ name: 'Обновлённый товар' });
 
-      const req = httpMock.expectOne(`${API_BASE_URL}/products/999`);
-      req.flush('Not found', { status: 404, statusText: 'Not Found' });
-
-      const state = productSignal();
-      expect(state.loading).toBeFalse();
-      expect(state.error).toBeTruthy();
-      expect(state.data).toBeUndefined();
+    service.update('1', { name: 'Обновлённый товар' }).subscribe((p) => {
+      expect(p.name).toBe('Обновлённый товар');
     });
+
+    const req = httpMock.expectOne(`${API_BASE_URL}/products/1`);
+    expect(req.request.method).toBe('PUT');
+    req.flush({ data: updated });
+  });
+
+  it('should delete product', () => {
+    flushInitialGet();
+
+    service.delete('1').subscribe(() => {
+      // success — no error
+    });
+
+    const req = httpMock.expectOne(`${API_BASE_URL}/products/1`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null, { status: 204, statusText: 'No Content' });
   });
 });

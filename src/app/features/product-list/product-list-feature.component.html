@@ -1,3 +1,7 @@
+<p-toast />
+
+<p-confirmDialog />
+
 @if (loading()) {
   <div class="product-list-feature__loading">
     <p-progressSpinner strokeWidth="3" />
@@ -8,33 +12,115 @@
 } @else {
   <section class="product-list-feature">
     <header class="product-list-feature__header">
-      <h2 class="product-list-feature__title">Товары и услуги</h2>
-
-      <p-selectButton
-        [options]="kindOptions"
-        optionLabel="label"
-        optionValue="value"
-        [ngModel]="selectedKind()"
-        (ngModelChange)="onKindChange($event)"
+      <div class="product-list-feature__header-left">
+        <h2 class="product-list-feature__title">Товары и услуги</h2>
+        <p-selectButton
+          [options]="kindOptions"
+          optionLabel="label"
+          optionValue="value"
+          [ngModel]="selectedKind()"
+          (ngModelChange)="selectedKind.set($event)"
+        />
+      </div>
+      <p-button
+        label="Создать товар"
+        icon="pi pi-plus"
+        severity="success"
+        (click)="onCreate()"
       />
     </header>
 
-    @if (isEmpty()) {
-      <div class="product-list-feature__empty">
-        <i class="pi pi-inbox product-list-feature__empty-icon"></i>
-        <p class="product-list-feature__empty-text">
-          {{ hasFiltered() ? 'Нет товаров в выбранной категории' : 'Список товаров пуст' }}
-        </p>
-      </div>
-    } @else {
-      <div class="product-list-feature__grid">
-        @for (product of filteredProducts(); track product.id) {
-          <app-product-card
-            [product]="product"
-            (clicked)="onProductClick(product.id)"
+    <p-table
+      #dt
+      [value]="filteredProducts()"
+      [loading]="loading()"
+      [rows]="20"
+      [paginator]="true"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [globalFilterFields]="['name', 'code', 'description']"
+      styleClass="p-datatable-sm"
+    >
+      <ng-template pTemplate="caption">
+        <div class="product-list-feature__search">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+            placeholder="Поиск по товарам…"
           />
-        }
-      </div>
-    }
+        </div>
+      </ng-template>
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="name">Название <p-sortIcon field="name" /></th>
+          <th pSortableColumn="code">Артикул <p-sortIcon field="code" /></th>
+          <th pSortableColumn="kind">Тип <p-sortIcon field="kind" /></th>
+          <th pSortableColumn="price">Цена <p-sortIcon field="price" /></th>
+          <th pSortableColumn="unit">Ед. изм. <p-sortIcon field="unit" /></th>
+          <th pSortableColumn="isActive">Статус <p-sortIcon field="isActive" /></th>
+          <th style="width: 120px">Действия</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-product>
+        <tr>
+          <td>{{ product.name }}</td>
+          <td>{{ product.code || '—' }}</td>
+          <td>
+            <p-tag
+              [value]="product.kind | productKindLabel"
+              [severity]="kindSeverity(product.kind)"
+            />
+          </td>
+          <td>{{ product.price | price }}</td>
+          <td>{{ product.unit }}</td>
+          <td>
+            <p-tag
+              [value]="product.isActive ? 'Активен' : 'Неактивен'"
+              [severity]="product.isActive ? 'success' : 'danger'"
+            />
+          </td>
+          <td>
+            <div class="product-list-feature__actions">
+              <p-button
+                icon="pi pi-pencil"
+                severity="info"
+                [text]="true"
+                [rounded]="true"
+                pTooltip="Редактировать"
+                tooltipPosition="top"
+                (click)="onEdit(product)"
+              />
+              <p-button
+                icon="pi pi-trash"
+                severity="danger"
+                [text]="true"
+                [rounded]="true"
+                pTooltip="Удалить"
+                tooltipPosition="top"
+                (click)="onDelete(product)"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptydata">
+        <div class="product-list-feature__empty">
+          <i class="pi pi-inbox product-list-feature__empty-icon"></i>
+          <p>Товары не найдены</p>
+        </div>
+      </ng-template>
+    </p-table>
   </section>
+}
+
+@if (showDialog()) {
+  <app-product-form-dialog
+    [product]="editingProduct()"
+    (saved)="onSave($event)"
+    (cancelled)="onCancelDialog()"
+  />
 }

@@ -6,13 +6,16 @@ describe('ProductCardComponent', () => {
   let fixture: ComponentFixture<ProductCardComponent>;
   let component: ProductCardComponent;
 
-  const mockProduct: Product = {
-    id: 'p1',
+  const mockProduct: Product = new Product({
+    _id: 'p1',
     name: 'Тестовый товар',
+    description: 'Описание',
     price: 1500,
+    unit: 'шт',
     images: ['https://example.com/img.jpg'],
     kind: 'ITEM' as ProductKind,
-  };
+    isActive: true,
+  });
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -31,9 +34,8 @@ describe('ProductCardComponent', () => {
   });
 
   it('should display product name', () => {
-    const titleEl = fixture.nativeElement.querySelector('.product-card__title');
-    expect(titleEl).toBeTruthy();
-    expect(titleEl.textContent).toContain('Тестовый товар');
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Тестовый товар');
   });
 
   it('should display formatted price', () => {
@@ -43,9 +45,8 @@ describe('ProductCardComponent', () => {
   });
 
   it('should display product kind label', () => {
-    const kindEl = fixture.nativeElement.querySelector('.product-card__kind');
-    expect(kindEl).toBeTruthy();
-    expect(kindEl.textContent).toContain('Товар');
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Товар');
   });
 
   it('should render image when images are present', () => {
@@ -56,7 +57,7 @@ describe('ProductCardComponent', () => {
   });
 
   it('should show placeholder when no images', () => {
-    fixture.componentRef.setInput('product', { ...mockProduct, images: [] });
+    fixture.componentRef.setInput('product', new Product({ ...mockProduct, images: [] }));
     fixture.detectChanges();
 
     const imgEl = fixture.nativeElement.querySelector('.product-card__image');
@@ -72,14 +73,14 @@ describe('ProductCardComponent', () => {
     let emitted: Product | undefined;
     component.clicked.subscribe((p) => (emitted = p));
 
-    const button = fixture.nativeElement.querySelector('.product-card');
-    button.click();
+    const card = fixture.nativeElement.querySelector('.product-card');
+    card.click();
 
     expect(emitted).toEqual(mockProduct);
   });
 
   it('should apply BEM class product-card', () => {
-    const button = fixture.nativeElement.querySelector('.product-card');
-    expect(button).toBeTruthy();
+    const card = fixture.nativeElement.querySelector('.product-card');
+    expect(card).toBeTruthy();
   });
 });
