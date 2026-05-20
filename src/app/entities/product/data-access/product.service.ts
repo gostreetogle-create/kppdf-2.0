@@ -1,30 +1,29 @@
 import { inject, Injectable, Signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, map, startWith } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { Product } from '../models/product.model';
-import { API_BASE_URL } from '../../../core/api.config';
+import { ApiService } from '../../../core/api/api.service';
 import {
   ResourceState,
   initialResourceState,
 } from '../../../shared/utils/resource-state';
+import type { IProduct } from '../../../shared/types/product.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProductService {
-  private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${API_BASE_URL}/products`;
+  private readonly api = inject(ApiService);
 
   private readonly _products: Signal<ResourceState<Product[]>> = toSignal(
-    this.http.get<Product[]>(this.baseUrl).pipe(
-      map((data): ResourceState<Product[]> => ({
+    this.api.get<IProduct[]>('/products').pipe(
+      map((res): ResourceState<Product[]> => ({
         loading: false,
         error: null,
-        data,
+        data: (res.data ?? []).map((p) => new Product(p)),
       })),
-      catchError((err: HttpErrorResponse) =>
+      catchError((err: { message?: string }) =>
         of({
           loading: false,
           error: err.message ?? 'Ошибка загрузки товаров',
@@ -39,13 +38,13 @@ export class ProductService {
 
   getById(id: string): Signal<ResourceState<Product | undefined>> {
     return toSignal(
-      this.http.get<Product>(`${this.baseUrl}/${encodeURIComponent(id)}`).pipe(
-        map((data): ResourceState<Product | undefined> => ({
+      this.api.getById<IProduct>('/products', id).pipe(
+        map((res): ResourceState<Product | undefined> => ({
           loading: false,
           error: null,
-          data,
+          data: res.data ? new Product(res.data) : undefined,
         })),
-        catchError((err: HttpErrorResponse) =>
+        catchError((err: { message?: string }) =>
           of({
             loading: false,
             error: err.message ?? 'Ошибка загрузки товара',

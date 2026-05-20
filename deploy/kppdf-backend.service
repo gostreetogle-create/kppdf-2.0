@@ -1,0 +1,24 @@
+[Unit]
+Description=KPPDF 2.0 Backend (Express + MongoDB)
+After=network.target mongod.service
+Wants=mongod.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/kppdf-2.0/backend
+ExecStart=/usr/bin/node /opt/kppdf-2.0/backend/dist/app.js
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+StandardOutput=journal
+StandardError=journal
+
+# Security
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

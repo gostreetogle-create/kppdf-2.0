@@ -6,7 +6,8 @@
     ".roo/rules/architecture-layers.md",
     ".roo/rules/angular-signals.md",
     ".roo/rules/ui-standards.md",
-    "plan.md"
+    ".opencode/agents/orchestrator.md",
+    ".opencode/plans/00-plan-index.md"
   ],
   "agent": {
     "orchestrator": {
@@ -22,6 +23,14 @@
           "ui-specialist": "allow",
           "tester": "allow",
           "pdf-specialist": "allow",
+          "kp-specialist": "allow",
+          "product-specialist": "allow",
+          "counterparty-specialist": "allow",
+          "auth-specialist": "allow",
+          "settings-specialist": "allow",
+          "backend-specialist": "allow",
+          "deploy-specialist": "allow",
+          "api-specialist": "allow",
           "*": "deny"
         }
       }
