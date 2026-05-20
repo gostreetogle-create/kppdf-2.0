@@ -17,7 +17,7 @@ export class AuthStore {
   readonly accessToken = this._accessToken.asReadonly();
   readonly refreshToken = this._refreshToken.asReadonly();
   readonly loading = this._loading.asReadonly();
-  readonly isAuthenticated = computed(() => this._user() !== null);
+  readonly isAuthenticated = computed(() => this._accessToken() !== null);
 
   // ---- Token management ----
 

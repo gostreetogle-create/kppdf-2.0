@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { AuthStore } from './auth.store';
 import { ApiService } from '../api/api.service';
 import type { ILoginRequest, ILoginResponse, IUser } from '../../shared/types/user.interface';
@@ -13,13 +13,10 @@ export class AuthService {
   private readonly store = inject(AuthStore);
 
   constructor() {
-    // Восстановить токен при загрузке
+    // Восстановить токен при загрузке (синхронно, без ожидания)
     const token = this.store.accessToken();
     if (token) {
       this.api.setToken(token);
-      this.loadCurrentUser().subscribe({
-        error: () => this.store.clear(),
-      });
     }
   }
 
@@ -98,16 +95,29 @@ export class AuthService {
     this.api.setToken(null);
   }
 
-  /** Инициализация при старте (APP_INITIALIZER) */
+  /** Инициализация при старте — проверяет токен и загружает пользователя */
   initAuth(): Observable<boolean> {
-    const refresh = this.store.refreshToken();
-    if (!refresh) return of(false);
+    const token = this.store.accessToken();
+    if (!token) return of(false);
 
-    return this.refreshToken().pipe(
+    this.api.setToken(token);
+
+    return this.loadCurrentUser().pipe(
       map(() => true),
       catchError(() => {
-        this.logout();
-        return of(false);
+        // Пробуем обновить токен
+        const refresh = this.store.refreshToken();
+        if (!refresh) {
+          this.logout();
+          return of(false);
+        }
+        return this.refreshToken().pipe(
+          switchMap(() => this.loadCurrentUser().pipe(map(() => true))),
+          catchError(() => {
+            this.logout();
+            return of(false);
+          }),
+        );
       }),
     );
   }
