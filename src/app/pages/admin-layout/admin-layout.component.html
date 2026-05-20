@@ -2,7 +2,7 @@
   <!-- Sidebar -->
   <aside class="layout__sidebar">
     <div class="layout__logo">
-      <span class="layout__logo-icon">📋</span>
+      <i class="pi pi-file-pdf layout__logo-icon"></i>
       <span class="layout__logo-text">KPPDF</span>
     </div>
 
@@ -13,18 +13,24 @@
           [routerLink]="item.path"
           routerLinkActive="layout__nav-link--active"
           [routerLinkActiveOptions]="{ exact: item.path === '/dashboard' }"
+          pTooltip="{{ item.label }}"
+          tooltipPosition="right"
         >
-          <span class="layout__nav-icon">{{ item.icon }}</span>
+          <i [class]="item.icon" class="layout__nav-icon"></i>
           <span class="layout__nav-label">{{ item.label }}</span>
         </a>
       }
     </nav>
 
     <div class="layout__sidebar-footer">
-      <button class="layout__logout-btn" (click)="logout()">
-        <span>🚪</span>
-        <span>Выйти</span>
-      </button>
+      <p-button
+        label="Выйти"
+        icon="pi pi-sign-out"
+        severity="secondary"
+        [text]="true"
+        styleClass="layout__logout-btn"
+        (click)="logout()"
+      />
     </div>
   </aside>
 
@@ -37,7 +43,7 @@
       <div class="layout__header-right">
         @if (authStore.user(); as user) {
           <span class="layout__user-name">{{ user.displayName }}</span>
-          <span class="layout__user-role">{{ user.role }}</span>
+          <p-avatar label="{{ user.displayName[0] }}" styleClass="layout__user-avatar" shape="circle" size="large" />
         }
       </div>
     </header>

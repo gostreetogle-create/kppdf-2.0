@@ -3,28 +3,40 @@
   <p class="dashboard__subtitle">Добро пожаловать в KPPDF 2.0</p>
 
   <div class="dashboard__cards">
-    <div class="dashboard__card">
-      <div class="dashboard__card-icon">📄</div>
-      <div class="dashboard__card-info">
+    <p-card class="dashboard__card">
+      <ng-template pTemplate="title">
+        <div class="dashboard__card-header">
+          <i class="pi pi-file"></i>
+          <span>КП</span>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="content">
         <span class="dashboard__card-value">0</span>
-        <span class="dashboard__card-label">КП</span>
-      </div>
-    </div>
+      </ng-template>
+    </p-card>
 
-    <div class="dashboard__card">
-      <div class="dashboard__card-icon">📦</div>
-      <div class="dashboard__card-info">
+    <p-card class="dashboard__card">
+      <ng-template pTemplate="title">
+        <div class="dashboard__card-header">
+          <i class="pi pi-box"></i>
+          <span>Товаров</span>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="content">
         <span class="dashboard__card-value">0</span>
-        <span class="dashboard__card-label">Товаров</span>
-      </div>
-    </div>
+      </ng-template>
+    </p-card>
 
-    <div class="dashboard__card">
-      <div class="dashboard__card-icon">🏢</div>
-      <div class="dashboard__card-info">
+    <p-card class="dashboard__card">
+      <ng-template pTemplate="title">
+        <div class="dashboard__card-header">
+          <i class="pi pi-building"></i>
+          <span>Контрагентов</span>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="content">
         <span class="dashboard__card-value">0</span>
-        <span class="dashboard__card-label">Контрагентов</span>
-      </div>
-    </div>
+      </ng-template>
+    </p-card>
   </div>
 </div>
