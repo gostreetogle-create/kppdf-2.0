@@ -4,12 +4,13 @@ import { authenticate, authorize } from '../auth/auth.middleware';
 
 const router = Router();
 
-router.use(authenticate);
-
+// GET — публичные (чтение каталога без авторизации)
 router.get('/', productController.getAll);
 router.get('/:id', productController.getById);
-router.post('/', authorize('owner', 'admin', 'manager'), productController.create);
-router.put('/:id', authorize('owner', 'admin', 'manager'), productController.update);
-router.delete('/:id', authorize('owner', 'admin'), productController.remove);
+
+// POST/PUT/DELETE — под токеном
+router.post('/', authenticate, authorize('owner', 'admin', 'manager'), productController.create);
+router.put('/:id', authenticate, authorize('owner', 'admin', 'manager'), productController.update);
+router.delete('/:id', authenticate, authorize('owner', 'admin'), productController.remove);
 
 export default router;
