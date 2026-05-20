@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, map, startWith } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { Product } from '../models/product.model';
-import { ApiService } from '../../../core/api/api.service';
+import { ApiService, ApiError } from '../../../core/api/api.service';
 import {
   ResourceState,
   initialResourceState,
@@ -23,7 +23,7 @@ export class ProductService {
         error: null,
         data: (res.data ?? []).map((p) => new Product(p)),
       })),
-      catchError((err: { message?: string }) =>
+      catchError((err: ApiError) =>
         of({
           loading: false,
           error: err.message ?? 'Ошибка загрузки товаров',
@@ -44,7 +44,7 @@ export class ProductService {
           error: null,
           data: res.data ? new Product(res.data) : undefined,
         })),
-        catchError((err: { message?: string }) =>
+        catchError((err: ApiError) =>
           of({
             loading: false,
             error: err.message ?? 'Ошибка загрузки товара',

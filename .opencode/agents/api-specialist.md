@@ -28,7 +28,9 @@
 - `proxy.conf.json` в корне проекта настраивает перенаправление `/api/*` и `/health` → `localhost:3000`
 - `angular.json` → `serve.options.proxyConfig` ссылается на `proxy.conf.json`
 - Без этого фронтенд получит `index.html` вместо JSON — ошибка `"<!doctype html>" is not valid JSON`
+- **pathRewrite** в proxy.conf.json: `"^/api/v1": ""` — обязателен, иначе 404 (фронтенд шлёт `/api/v1/products`, бэкенд слушает `/products`)
 - При создании нового API-маршрута проверить, что он либо попадает под `/api/*` в proxy.conf.json, либо добавлен отдельно
+- Синхронизировать pathRewrite между proxy.conf.json (dev) и nginx.conf (prod)
 
 ## Границы
 - Не изменяет бизнес-логику модулей

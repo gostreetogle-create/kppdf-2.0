@@ -1,5 +1,5 @@
 import { KpModel, IKpDocument } from './kp.model';
-import { NotFoundError, ValidationError, ForbiddenError } from '../../shared/errors';
+import { NotFoundError, ValidationError, ForbiddenError, ConflictError } from '../../shared/errors';
 import { KP_STATUS_TRANSITIONS } from '@shared/constants/kp-statuses';
 import type { IKp, KpStatus, KpType, IKpItem } from '@shared/types/kp.interface';
 
@@ -193,32 +193,35 @@ export async function changeStatus(id: string, newStatus: KpStatus, userId: stri
   const doc = await KpModel.findById(id);
   if (!doc) throw new NotFoundError('Kp', id);
 
-  const allowed = KP_STATUS_TRANSITIONS[doc.status as KpStatus] ?? [];
+  const currentStatus = doc.status as KpStatus;
+  const allowed = KP_STATUS_TRANSITIONS[currentStatus] ?? [];
   if (!allowed.includes(newStatus)) {
-    throw new ValidationError(`Cannot transition from '${doc.status}' to '${newStatus}'`);
+    throw new ValidationError(`Cannot transition from '${currentStatus}' to '${newStatus}'`);
   }
 
-  const currentVersion = (doc.versions?.length ?? 0) + 1;
+  const newVersion = {
+    version: (doc.versions?.length ?? 0) + 1,
+    createdAt: new Date().toISOString(),
+    status: newStatus,
+    number: doc.metadata.number,
+    title: doc.title,
+    changedBy: userId,
+  };
 
-  const updated = await KpModel.findByIdAndUpdate(
-    id,
+  // Атомарное обновление с OCC: обновляем ТОЛЬКО если статус не изменился
+  const updated = await KpModel.findOneAndUpdate(
+    { _id: id, status: currentStatus },
     {
       $set: { status: newStatus },
-      $push: {
-        versions: {
-          version: currentVersion,
-          createdAt: new Date().toISOString(),
-          status: newStatus,
-          number: doc.metadata.number,
-          title: doc.title,
-          changedBy: userId,
-        },
-      },
+      $push: { versions: newVersion },
     },
     { new: true },
   );
 
-  if (!updated) throw new NotFoundError('Kp', id);
+  if (!updated) {
+    throw new ConflictError('Status was already changed by another user. Refresh the page and retry.');
+  }
+
   return toJSON(updated);
 }
 
