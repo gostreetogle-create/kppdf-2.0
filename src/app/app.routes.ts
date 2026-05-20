@@ -5,7 +5,8 @@ import { LoginPageComponent } from './pages/login/login-page.component';
 import { DashboardPageComponent } from './pages/dashboard/dashboard-page.component';
 import { ProductListPageComponent } from './pages/product-list/product-list-page.component';
 import { CounterpartyListPageComponent } from './pages/counterparty-list/counterparty-list-page.component';
-import { PlaceholderPageComponent } from './pages/placeholder/placeholder-page.component';
+import { KpListPageComponent } from './pages/kp-list/kp-list-page.component';
+import { SettingsPageComponent } from './pages/settings/settings-page.component';
 
 export const routes: Routes = [
   {
@@ -36,13 +37,11 @@ export const routes: Routes = [
       },
       {
         path: 'kp',
-        component: PlaceholderPageComponent,
-        data: { title: 'Коммерческие предложения' },
+        component: KpListPageComponent,
       },
       {
         path: 'settings',
-        component: PlaceholderPageComponent,
-        data: { title: 'Настройки' },
+        component: SettingsPageComponent,
       },
     ],
   },

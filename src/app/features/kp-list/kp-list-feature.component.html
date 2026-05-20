@@ -1,0 +1,51 @@
+<p-toast /><p-confirmDialog />
+
+<section class="kp-list-feature">
+  <header class="kp-list-feature__header">
+    <h2 class="kp-list-feature__title">Коммерческие предложения</h2>
+    <p-button label="Создать КП" icon="pi pi-plus" severity="success" (click)="onCreate()" />
+  </header>
+
+  <p-table #dt [value]="items()" [loading]="loading()" [rows]="20" [paginator]="true" [rowsPerPageOptions]="[10,20,50]" styleClass="p-datatable-sm">
+    <ng-template pTemplate="caption">
+      <div class="kp-list-feature__search">
+        <i class="pi pi-search"></i>
+        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Поиск…" />
+      </div>
+    </ng-template>
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="title">Название <p-sortIcon field="title" /></th>
+        <th>Номер</th>
+        <th pSortableColumn="kpType">Тип <p-sortIcon field="kpType" /></th>
+        <th pSortableColumn="status">Статус <p-sortIcon field="status" /></th>
+        <th>Получатель</th>
+        <th pSortableColumn="totalAmount">Сумма <p-sortIcon field="totalAmount" /></th>
+        <th style="width:120px">Действия</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr>
+        <td><strong>{{ item.title }}</strong></td>
+        <td>{{ item.metadata?.number || '—' }}</td>
+        <td><p-tag [value]="item.kpType | kpTypeLabel" severity="info" /></td>
+        <td><p-tag [value]="item.status | kpStatusLabel" [severity]="statusSeverity(item.status)" /></td>
+        <td>{{ item.recipient?.name || '—' }}</td>
+        <td>{{ item.totalAmount !== undefined && item.totalAmount !== null ? (item.totalAmount | number:'1.2-2') : '—' }}</td>
+        <td>
+          <div class="kp-list-feature__actions">
+            <p-button icon="pi pi-pencil" severity="info" [text]="true" [rounded]="true" pTooltip="Редактировать" tooltipPosition="top" (click)="onEdit(item)" />
+            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" pTooltip="Удалить" tooltipPosition="top" (click)="onDelete(item)" />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptydata">
+      <div class="kp-list-feature__empty"><i class="pi pi-file kp-list-feature__empty-icon"></i><p>КП не найдены</p></div>
+    </ng-template>
+  </p-table>
+</section>
+
+@if (showDialog()) {
+  <app-kp-form-dialog [kp]="editingItem()" (saved)="onSave($event)" (cancelled)="onCancelDialog()" />
+}
