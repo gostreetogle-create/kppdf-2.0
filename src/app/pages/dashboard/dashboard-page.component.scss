@@ -1,0 +1,57 @@
+.dashboard {
+  &__title {
+    margin: 0 0 4px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  &__subtitle {
+    margin: 0 0 24px;
+    color: #64748b;
+    font-size: 14px;
+  }
+
+  &__cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  &__card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    transition: box-shadow 0.2s;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    &-icon {
+      font-size: 32px;
+    }
+
+    &-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    &-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1;
+    }
+
+    &-label {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+  }
+}

@@ -1,14 +1,33 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/auth/auth.guard';
+import { AdminLayoutComponent } from './pages/admin-layout/admin-layout.component';
+import { LoginPageComponent } from './pages/login/login-page.component';
+import { DashboardPageComponent } from './pages/dashboard/dashboard-page.component';
 import { ProductListPageComponent } from './pages/product-list/product-list-page.component';
 
 export const routes: Routes = [
   {
-    path: '',
-    pathMatch: 'full',
-    redirectTo: 'products',
+    path: 'login',
+    component: LoginPageComponent,
   },
   {
-    path: 'products',
-    component: ProductListPageComponent,
+    path: '',
+    component: AdminLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'dashboard',
+      },
+      {
+        path: 'dashboard',
+        component: DashboardPageComponent,
+      },
+      {
+        path: 'products',
+        component: ProductListPageComponent,
+      },
+    ],
   },
 ];

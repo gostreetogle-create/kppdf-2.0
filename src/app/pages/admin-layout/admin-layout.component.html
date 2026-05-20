@@ -1,0 +1,49 @@
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="layout__sidebar">
+    <div class="layout__logo">
+      <span class="layout__logo-icon">📋</span>
+      <span class="layout__logo-text">KPPDF</span>
+    </div>
+
+    <nav class="layout__nav">
+      @for (item of navItems; track item.path) {
+        <a
+          class="layout__nav-link"
+          [routerLink]="item.path"
+          routerLinkActive="layout__nav-link--active"
+          [routerLinkActiveOptions]="{ exact: item.path === '/dashboard' }"
+        >
+          <span class="layout__nav-icon">{{ item.icon }}</span>
+          <span class="layout__nav-label">{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <div class="layout__sidebar-footer">
+      <button class="layout__logout-btn" (click)="logout()">
+        <span>🚪</span>
+        <span>Выйти</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="layout__main">
+    <header class="layout__header">
+      <div class="layout__header-left">
+        <h2 class="layout__page-title">KPPDF 2.0</h2>
+      </div>
+      <div class="layout__header-right">
+        @if (authStore.user(); as user) {
+          <span class="layout__user-name">{{ user.displayName }}</span>
+          <span class="layout__user-role">{{ user.role }}</span>
+        }
+      </div>
+    </header>
+
+    <main class="layout__content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

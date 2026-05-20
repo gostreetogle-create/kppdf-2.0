@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { tap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 import { AuthStore } from './auth.store';
 import { ApiService } from '../api/api.service';
 import type { ILoginRequest, ILoginResponse, IUser } from '../../shared/types/user.interface';
@@ -22,49 +23,71 @@ export class AuthService {
     }
   }
 
-  /** Авторизация */
-  login(credentials: ILoginRequest): void {
+  /** Авторизация — возвращает Observable, чтобы UI мог подписаться */
+  login(credentials: ILoginRequest): Observable<void> {
     this.store.setLoading(true);
-    this.api
-      .post<ILoginResponse>('/auth/login', credentials)
-      .pipe(
-        tap((res) => {
-          const { user, tokens } = res.data;
-          this.store.setTokens(tokens.accessToken, tokens.refreshToken);
-          this.api.setToken(tokens.accessToken);
-          this.store.setUser(user);
-          this.store.setLoading(false);
-        }),
-      )
-      .subscribe({
-        error: () => this.store.setLoading(false),
-      });
+    return this.api.post<ILoginResponse>('/auth/login', credentials).pipe(
+      tap((res) => {
+        const { user, tokens } = res.data;
+        this.store.setTokens(tokens.accessToken, tokens.refreshToken);
+        this.api.setToken(tokens.accessToken);
+        this.store.setUser(user);
+        this.store.setLoading(false);
+      }),
+      map(() => void 0),
+      catchError((err) => {
+        this.store.setLoading(false);
+        throw err;
+      }),
+    );
   }
 
   /** Регистрация */
-  register(data: { username: string; email: string; password: string; displayName: string }): void {
+  register(data: { username: string; email: string; password: string; displayName: string }): Observable<void> {
     this.store.setLoading(true);
-    this.api
-      .post<ILoginResponse>('/auth/register', data)
-      .pipe(
-        tap((res) => {
-          const { user, tokens } = res.data;
-          this.store.setTokens(tokens.accessToken, tokens.refreshToken);
-          this.api.setToken(tokens.accessToken);
-          this.store.setUser(user);
-          this.store.setLoading(false);
-        }),
-      )
-      .subscribe({
-        error: () => this.store.setLoading(false),
-      });
+    return this.api.post<ILoginResponse>('/auth/register', data).pipe(
+      tap((res) => {
+        const { user, tokens } = res.data;
+        this.store.setTokens(tokens.accessToken, tokens.refreshToken);
+        this.api.setToken(tokens.accessToken);
+        this.store.setUser(user);
+        this.store.setLoading(false);
+      }),
+      map(() => void 0),
+      catchError((err) => {
+        this.store.setLoading(false);
+        throw err;
+      }),
+    );
   }
 
   /** Загрузить текущего пользователя */
-  loadCurrentUser() {
+  loadCurrentUser(): Observable<IUser> {
     return this.api.get<IUser>('/auth/me').pipe(
       tap((res) => {
         this.store.setUser(res.data);
+      }),
+      map((res) => res.data),
+    );
+  }
+
+  /** Обновить токен */
+  refreshToken(): Observable<{ accessToken: string; refreshToken: string }> {
+    const rt = this.store.refreshToken();
+    if (!rt) {
+      this.logout();
+      return of({ accessToken: '', refreshToken: '' });
+    }
+
+    return this.api.post<{ accessToken: string; refreshToken: string }>('/auth/refresh', { refreshToken: rt }).pipe(
+      tap((res) => {
+        this.store.setTokens(res.data.accessToken, res.data.refreshToken);
+        this.api.setToken(res.data.accessToken);
+      }),
+      map((res) => res.data),
+      catchError((err) => {
+        this.logout();
+        throw err;
       }),
     );
   }
@@ -75,24 +98,17 @@ export class AuthService {
     this.api.setToken(null);
   }
 
-  /** Обновить токен */
-  refreshToken(): void {
-    const rt = this.store.refreshToken();
-    if (!rt) {
-      this.logout();
-      return;
-    }
+  /** Инициализация при старте (APP_INITIALIZER) */
+  initAuth(): Observable<boolean> {
+    const refresh = this.store.refreshToken();
+    if (!refresh) return of(false);
 
-    this.api
-      .post<{ accessToken: string; refreshToken: string }>('/auth/refresh', { refreshToken: rt })
-      .pipe(
-        tap((res) => {
-          this.store.setTokens(res.data.accessToken, res.data.refreshToken);
-          this.api.setToken(res.data.accessToken);
-        }),
-      )
-      .subscribe({
-        error: () => this.logout(),
-      });
+    return this.refreshToken().pipe(
+      map(() => true),
+      catchError(() => {
+        this.logout();
+        return of(false);
+      }),
+    );
   }
 }

@@ -1,0 +1,57 @@
+<div class="login">
+  <div class="login__card">
+    <h1 class="login__title">KPPDF 2.0</h1>
+    <p class="login__subtitle">Вход в систему</p>
+
+    @if (errorMessage(); as msg) {
+      <div class="login__error">
+        <p class="login__error-text">{{ msg }}</p>
+      </div>
+    }
+
+    <form class="login__form" (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <div class="login__field">
+        <label class="login__label" for="username">Логин</label>
+        <input
+          class="login__input"
+          id="username"
+          type="text"
+          [ngModel]="username()"
+          (ngModelChange)="username.set($event)"
+          name="username"
+          placeholder="admin"
+          autocomplete="username"
+          required
+        />
+      </div>
+
+      <div class="login__field">
+        <label class="login__label" for="password">Пароль</label>
+        <input
+          class="login__input"
+          id="password"
+          type="password"
+          [ngModel]="password()"
+          (ngModelChange)="password.set($event)"
+          name="password"
+          placeholder="••••••"
+          autocomplete="current-password"
+          required
+        />
+      </div>
+
+      <button
+        class="login__button"
+        type="submit"
+        [disabled]="loading()"
+      >
+        @if (loading()) {
+          <span class="login__spinner"></span>
+          Вход…
+        } @else {
+          Войти
+        }
+      </button>
+    </form>
+  </div>
+</div>
