@@ -13,7 +13,9 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { Kp, KpStatus } from '../../entities/kp/models/kp.model';
 import { KpService } from '../../entities/kp/data-access/kp.service';
 import { KpFormDialogComponent, KpFormValue } from '../../entities/kp/ui/kp-form-dialog/kp-form-dialog.component';
+import { CounterpartyService } from '../../entities/counterparty/data-access/counterparty.service';
 import { KpStatusLabelPipe, KpTypeLabelPipe } from '../../shared/pipes/kp.pipe';
+import type { IKpRecipientSnapshot } from '../../shared/types/kp.interface';
 
 @Component({
   selector: 'app-kp-list-feature',
@@ -26,6 +28,7 @@ import { KpStatusLabelPipe, KpTypeLabelPipe } from '../../shared/pipes/kp.pipe';
 })
 export class KpListFeatureComponent {
   private readonly service = inject(KpService);
+  private readonly counterpartyService = inject(CounterpartyService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
 
@@ -39,16 +42,43 @@ export class KpListFeatureComponent {
   onCreate(): void { this.editingItem.set(null); this.showDialog.set(true); }
   onEdit(item: Kp): void { this.editingItem.set(item); this.showDialog.set(true); }
 
+  private buildRecipientFromCounterparty(counterpartyId: string): IKpRecipientSnapshot {
+    const state = this.counterpartyService.items();
+    const c = (state.data ?? []).find((cp) => cp._id === counterpartyId);
+    if (!c) return { name: 'Неизвестный контрагент' };
+
+    return {
+      name: c.name,
+      shortName: c.shortName,
+      legalForm: c.legalForm,
+      inn: c.inn,
+      kpp: c.kpp,
+      ogrn: c.ogrn,
+      legalAddress: c.legalAddress,
+      phone: c.phone,
+      email: c.email,
+      bankName: c.bankName,
+      bik: c.bik,
+      checkingAccount: c.checkingAccount,
+      correspondentAccount: c.correspondentAccount,
+    };
+  }
+
   onSave(value: KpFormValue): void {
     const item = this.editingItem();
+    const recipient = value.recipientId
+      ? this.buildRecipientFromCounterparty(value.recipientId)
+      : { name: '' };
+
     const payload = {
       title: value.title,
       kpType: value.kpType,
       status: value.status,
       vatPercent: value.vatPercent,
-      recipient: { name: value.recipientName },
+      counterpartyId: value.recipientId ?? undefined,
+      recipient,
       metadata: { number: value.number, validityDays: value.validityDays, prepaymentPercent: 50, productionDays: 30 },
-      companySnapshot: { companyId: '', companyName: '', templateKey: 'default', templateName: 'По умолчанию', kpType: value.kpType, assets: { kpPage1: '' }, texts: {} },
+      companySnapshot: { companyId: '', companyName: 'Моя компания', templateKey: 'default', templateName: 'По умолчанию', kpType: value.kpType, assets: { kpPage1: '' }, texts: {} },
       items: [],
       conditions: [],
     };

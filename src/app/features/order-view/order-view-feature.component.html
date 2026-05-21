@@ -1,0 +1,47 @@
+@if (orderResource.isLoading()) {
+  <div class="order-view__loading">
+    <p-skeleton width="100%" height="200px" />
+  </div>
+} @else if (orderResource.error(); as err) {
+  <p-message severity="error" [text]="'Ошибка загрузки заказа: ' + err.message" />
+} @else if (orderResource.hasValue()) {
+  <div class="order-view">
+    <!-- Header -->
+    <div class="order-view__header">
+      <div class="order-view__header-left">
+        <h2 class="order-view__number">{{ orderResource.value()!.order.number }}</h2>
+        <span class="order-view__status">{{ orderResource.value()!.order.statusId }}</span>
+      </div>
+      <div class="order-view__header-right">
+        <span class="order-view__total">
+          Итого: <strong>{{ orderResource.value()!.order.totalSum | number:'1.2-2' }} ₽</strong>
+        </span>
+      </div>
+    </div>
+
+    <!-- Информация о контрагенте -->
+    <div class="order-view__info">
+      <div class="order-view__info-item">
+        <span class="order-view__info-label">Контрагент</span>
+        <span class="order-view__info-value">{{ orderResource.value()!.order.counterpartyName }}</span>
+      </div>
+      <div class="order-view__info-item">
+        <span class="order-view__info-label">Приоритет</span>
+        <span class="order-view__info-value">{{ orderResource.value()!.order.priority }}</span>
+      </div>
+      <div class="order-view__info-item">
+        <span class="order-view__info-label">Срок</span>
+        <span class="order-view__info-value">
+          {{ orderResource.value()!.order.productionDays }} дн.
+        </span>
+      </div>
+    </div>
+
+    <!-- Секции позиций -->
+    <app-order-item-sections
+      [items]="orderResource.value()!.items"
+      (reorder)="onReorder($event)"
+      (itemClick)="onItemClick($event)"
+    />
+  </div>
+}

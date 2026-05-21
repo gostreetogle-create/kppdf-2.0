@@ -1,7 +1,18 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import type { IProduct, ProductKind } from '@shared/types/product.interface';
+import type { IProduct, IProductComponent, ProductKind } from '@shared/types/product.interface';
 
 export interface IProductDocument extends Omit<IProduct, '_id'>, Document {}
+
+const componentSchema = new Schema<IProductComponent>(
+  {
+    productId: { type: String, required: true },
+    name: { type: String, required: true },
+    unit: { type: String, required: true },
+    price: { type: Number, required: true, min: 0 },
+    qty: { type: Number, required: true, min: 1 },
+  },
+  { _id: false },
+);
 
 const productSchema = new Schema<IProductDocument>(
   {
@@ -12,7 +23,7 @@ const productSchema = new Schema<IProductDocument>(
     unit: { type: String, required: true, trim: true },
     kind: {
       type: String,
-      enum: ['ITEM', 'SERVICE', 'WORK'],
+      enum: ['ITEM', 'SERVICE', 'WORK', 'COMPLEX'],
       required: true,
     },
     images: [{ type: String }],
@@ -20,6 +31,7 @@ const productSchema = new Schema<IProductDocument>(
     subcategory: { type: String, trim: true },
     specId: { type: String },
     isActive: { type: Boolean, default: true },
+    components: { type: [componentSchema], default: undefined },
   },
   { timestamps: true },
 );

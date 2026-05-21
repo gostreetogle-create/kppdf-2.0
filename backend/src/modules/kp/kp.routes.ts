@@ -6,6 +6,7 @@ const router = Router();
 
 // GET — публичные
 router.get('/', kpController.getAll);
+router.get('/next-number', kpController.getNextNumber);
 router.get('/:id', kpController.getById);
 router.get('/:id/calculate', kpController.recalculate);
 

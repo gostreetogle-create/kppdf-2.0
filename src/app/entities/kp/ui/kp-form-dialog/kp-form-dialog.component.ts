@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input, output, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
@@ -6,13 +6,15 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
 import { Kp } from '../../models/kp.model';
+import { KpService } from '../../data-access/kp.service';
+import { CounterpartyService } from '../../../counterparty/data-access/counterparty.service';
 import type { KpStatus, KpType } from '../../../../shared/types/kp.interface';
 
 export interface KpFormValue {
   title: string;
   kpType: KpType;
   status: KpStatus;
-  recipientName: string;
+  recipientId: string | null;
   number: string;
   validityDays: number;
   vatPercent: number;
@@ -31,39 +33,55 @@ export interface KpFormValue {
       (onHide)="onCancel()"
     >
       <form [formGroup]="form" class="kp-form">
+        <!-- Номер КП — авто-генерируется бэкендом -->
         <div class="kp-form__field">
-          <label class="kp-form__label" for="title">Название *</label>
-          <input id="title" pInputText formControlName="title" class="kp-form__input" />
+          <span class="kp-form__label">Номер КП</span>
+          @if (kp()) {
+            <span class="kp-form__number">{{ kp()!.metadata.number }}</span>
+          } @else {
+            <span class="kp-form__number kp-form__number--pending">{{ nextNumber() || 'Загрузка...' }}</span>
+          }
         </div>
+
         <div class="kp-form__row">
           <div class="kp-form__field">
             <label class="kp-form__label" for="kpType">Тип *</label>
-            <p-select id="kpType" formControlName="kpType" [options]="typeOptions" [style]="{ width: '100%' }" />
+            <p-select id="kpType" formControlName="kpType" [options]="typeOptions" [style]="{ width: '100%' }" appendTo="body" />
           </div>
           <div class="kp-form__field">
             <label class="kp-form__label" for="status">Статус</label>
-            <p-select id="status" formControlName="status" [options]="statusOptions" [style]="{ width: '100%' }" />
+            <p-select id="status" formControlName="status" [options]="statusOptions" [style]="{ width: '100%' }" appendTo="body" />
           </div>
         </div>
+
         <div class="kp-form__field">
-          <label class="kp-form__label" for="recipientName">Получатель *</label>
-          <input id="recipientName" pInputText formControlName="recipientName" class="kp-form__input" placeholder="Название организации" />
+          <label class="kp-form__label" for="recipientId">Получатель *</label>
+          <p-select
+            id="recipientId"
+            formControlName="recipientId"
+            [options]="counterpartyOptions()"
+            [filter]="true"
+            [showClear]="true"
+            placeholder="Выберите контрагента..."
+            optionLabel="label"
+            optionValue="value"
+            [style]="{ width: '100%' }"
+            appendTo="body"
+          />
         </div>
+
         <div class="kp-form__row">
-          <div class="kp-form__field">
-            <label class="kp-form__label" for="number">Номер *</label>
-            <input id="number" pInputText formControlName="number" class="kp-form__input" placeholder="КП-001" />
-          </div>
           <div class="kp-form__field">
             <label class="kp-form__label" for="validityDays">Дней действия</label>
             <p-inputNumber id="validityDays" formControlName="validityDays" [min]="1" class="kp-form__input" />
           </div>
-        </div>
-        <div class="kp-form__field">
-          <label class="kp-form__label" for="vatPercent">НДС, %</label>
-          <p-inputNumber id="vatPercent" formControlName="vatPercent" [min]="0" [max]="100" class="kp-form__input" />
+          <div class="kp-form__field">
+            <label class="kp-form__label" for="vatPercent">НДС, %</label>
+            <p-inputNumber id="vatPercent" formControlName="vatPercent" [min]="0" [max]="100" class="kp-form__input" />
+          </div>
         </div>
       </form>
+
       <ng-template pTemplate="footer">
         <p-button label="Отмена" severity="secondary" (click)="onCancel()" />
         <p-button [label]="kp() ? 'Сохранить' : 'Создать'" [disabled]="form.invalid" (click)="onSave()" />
@@ -76,14 +94,30 @@ export interface KpFormValue {
     .kp-form__field { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
     .kp-form__label { font-weight: 600; font-size: 0.875rem; }
     .kp-form__input { width: 100%; }
+    .kp-form__number { font-size: 1.1rem; font-weight: 700; color: var(--p-primary-color); padding: 0.25rem 0; }
+    .kp-form__number--pending { color: var(--p-text-muted-color); font-weight: 400; font-size: 0.875rem; }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KpFormDialogComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
+  private readonly kpService = inject(KpService);
+  private readonly counterpartyService = inject(CounterpartyService);
+
   readonly kp = input<Kp | null>(null);
   readonly saved = output<KpFormValue>();
   readonly cancelled = output<void>();
+
+  private readonly counterpartyState = this.counterpartyService.items;
+  readonly nextNumber = signal<string>('');
+
+  readonly counterpartyOptions = computed(() => {
+    const state = this.counterpartyState();
+    return (state.data ?? []).map((c) => ({
+      value: c._id,
+      label: c.inn ? `${c.name} (${c.inn})` : c.name,
+    }));
+  });
 
   readonly typeOptions = [
     { value: 'standard' as KpType, label: 'Стандартное' },
@@ -100,11 +134,9 @@ export class KpFormDialogComponent implements OnInit {
   ];
 
   readonly form = this.fb.nonNullable.group({
-    title: ['', Validators.required],
     kpType: ['standard' as KpType, Validators.required],
     status: ['draft' as KpStatus],
-    recipientName: ['', Validators.required],
-    number: ['', Validators.required],
+    recipientId: [null as string | null, Validators.required],
     validityDays: [30],
     vatPercent: [0],
   });
@@ -112,18 +144,28 @@ export class KpFormDialogComponent implements OnInit {
   ngOnInit(): void {
     const item = this.kp();
     if (item) {
+      // Режим редактирования — показываем существующий номер
       this.form.patchValue({
-        title: item.title,
         kpType: item.kpType,
         status: item.status,
-        recipientName: item.recipient?.name ?? '',
-        number: item.metadata?.number ?? '',
+        recipientId: item.counterpartyId ?? null,
         validityDays: item.metadata?.validityDays ?? 30,
         vatPercent: item.vatPercent,
+      });
+    } else {
+      // Режим создания — запрашиваем следующий номер
+      this.kpService.getNextNumber().subscribe({
+        next: (num) => this.nextNumber.set(num),
+        error: () => this.nextNumber.set('КП-001'),
       });
     }
   }
 
-  onSave(): void { if (this.form.invalid) return; this.saved.emit(this.form.getRawValue()); }
+  onSave(): void {
+    if (this.form.invalid) return;
+    const raw = this.form.getRawValue();
+    const number = this.kp()?.metadata.number ?? this.nextNumber();
+    this.saved.emit({ ...raw, title: number, number });
+  }
   onCancel(): void { this.cancelled.emit(); }
 }

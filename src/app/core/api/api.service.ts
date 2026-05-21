@@ -109,6 +109,30 @@ export class ApiService {
     );
   }
 
+  /** Загрузить файлы (multipart/form-data) */
+  upload<T>(path: string, files: File[], fieldName = 'images'): Observable<ApiResponse<T>> {
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append(fieldName, file, file.name);
+    }
+    return this.handleResponse(
+      this.http.post<T>(`${this.baseUrl}${path}`, formData, {
+        headers: {
+          ...(this._token ? { Authorization: `Bearer ${this._token}` } : {}),
+        },
+      }),
+    );
+  }
+
+  /** DELETE без id (для /uploads/filename) */
+  deleteByPath<T = void>(path: string): Observable<ApiResponse<T>> {
+    return this.handleResponse<T>(
+      this.http.delete<T>(`${this.baseUrl}${path}`, {
+        headers: this.headers(),
+      }) as Observable<T>,
+    );
+  }
+
   delete<T = void>(path: string, id: string): Observable<ApiResponse<T>> {
     return this.handleResponse<T>(
       this.http.delete<T>(`${this.baseUrl}${path}/${encodeURIComponent(id)}`, {

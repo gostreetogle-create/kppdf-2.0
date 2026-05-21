@@ -6,6 +6,7 @@
     ".roo/rules/architecture-layers.md",
     ".roo/rules/angular-signals.md",
     ".roo/rules/ui-standards.md",
+    ".roo/rules/erp-core.md",
     ".opencode/agents/orchestrator.md",
     ".opencode/plans/00-plan-index.md"
   ],
@@ -28,6 +29,8 @@
           "counterparty-specialist": "allow",
           "auth-specialist": "allow",
           "settings-specialist": "allow",
+          "status-specialist": "allow",
+          "audit-specialist": "allow",
           "backend-specialist": "allow",
           "deploy-specialist": "allow",
           "api-specialist": "allow",

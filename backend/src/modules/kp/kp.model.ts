@@ -60,11 +60,11 @@ const metadataSchema = new Schema<IKpMetadata>(
 
 const companySnapshotSchema = new Schema<IKpCompanySnapshot>(
   {
-    companyId: { type: String, required: true },
-    companyName: { type: String, required: true },
-    templateKey: { type: String, required: true },
-    templateName: { type: String, required: true },
-    kpType: { type: String, required: true },
+    companyId: { type: String, default: '' },
+    companyName: { type: String, default: '' },
+    templateKey: { type: String, default: 'default' },
+    templateName: { type: String, default: 'По умолчанию' },
+    kpType: { type: String, default: 'standard' },
     assets: {
       kpPage1: { type: String, default: '' },
       kpPage2: { type: String },

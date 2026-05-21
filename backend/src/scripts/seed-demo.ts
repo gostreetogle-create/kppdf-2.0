@@ -5,6 +5,8 @@ import { UserModel } from '../modules/auth/auth.model';
 import { ProductModel } from '../modules/product/product.model';
 import { CounterpartyModel } from '../modules/counterparty/counterparty.model';
 import { SettingModel } from '../modules/settings/settings.model';
+import { RoleModel } from '../modules/role/role.model';
+import { WorkTypeModel } from '../modules/work-type/work-type.model';
 import bcrypt from 'bcryptjs';
 
 async function seed(): Promise<void> {
@@ -36,6 +38,74 @@ async function seed(): Promise<void> {
       isActive: true,
     });
     console.log('[Seed] Manager created');
+  }
+
+  // 1.5. Roles
+  const roleCount = await RoleModel.countDocuments();
+  if (roleCount === 0) {
+    await RoleModel.insertMany([
+      { name: 'director', label: 'Директор', description: 'Полный доступ ко всем функциям', permissions: [
+        'order.view','order.create','order.edit','order.delete','order.status',
+        'product.view','product.create','product.edit','product.delete',
+        'counterparty.view','counterparty.create','counterparty.edit','counterparty.delete',
+        'kp.view','kp.create','kp.edit','kp.delete','kp.accept',
+        'task.view','task.create','task.edit','task.complete',
+        'material.view','material.request','material.approve',
+        'settings.view','settings.edit','statuses.edit','roles.edit',
+      ], isSystem: true, sortOrder: 10 },
+      { name: 'admin', label: 'Администратор', description: 'Управление системой без удаления', permissions: [
+        'order.view','order.create','order.edit','order.status',
+        'product.view','product.create','product.edit','product.delete',
+        'counterparty.view','counterparty.create','counterparty.edit','counterparty.delete',
+        'kp.view','kp.create','kp.edit','kp.delete','kp.accept',
+        'task.view','task.create','task.edit','task.complete',
+        'material.view','material.request','material.approve',
+        'settings.view','settings.edit','statuses.edit',
+      ], isSystem: true, sortOrder: 20 },
+      { name: 'manager', label: 'Менеджер', description: 'Работа с заказами и КП', permissions: [
+        'order.view','order.create','order.edit',
+        'product.view','product.create','product.edit',
+        'counterparty.view','counterparty.create','counterparty.edit',
+        'kp.view','kp.create','kp.edit','kp.accept',
+        'task.view','task.create','task.edit',
+        'material.view','material.request',
+        'settings.view',
+      ], isSystem: true, sortOrder: 30 },
+      { name: 'viewer', label: 'Наблюдатель', description: 'Только просмотр', permissions: [
+        'order.view','product.view','counterparty.view','kp.view','task.view','material.view','settings.view',
+      ], isSystem: true, sortOrder: 40 },
+    ]);
+    console.log('[Seed] Roles created');
+  }
+
+  // 1.6. EntityStatuses for Order
+  const { EntityStatusModel } = await import('../modules/entity-status/entity-status.model');
+  const orderStatusCount = await EntityStatusModel.countDocuments({ entityType: 'order' });
+  if (orderStatusCount === 0) {
+    await EntityStatusModel.insertMany([
+      { entityType: 'order', name: 'draft',       label: 'Черновик',      color: '#9ca3af', isInitial: true,  sortOrder: 10, allowedTransitions: ['sent', 'cancelled'] },
+      { entityType: 'order', name: 'sent',        label: 'Отправлен',     color: '#60a5fa', isInitial: false, sortOrder: 20, allowedTransitions: ['confirmed', 'cancelled'] },
+      { entityType: 'order', name: 'confirmed',   label: 'Подтверждён',   color: '#34d399', isInitial: false, sortOrder: 30, allowedTransitions: ['in_production', 'cancelled'] },
+      { entityType: 'order', name: 'in_production', label: 'В производстве', color: '#fbbf24', isInitial: false, sortOrder: 40, allowedTransitions: ['partially_shipped', 'completed'] },
+      { entityType: 'order', name: 'partially_shipped', label: 'Частично отгружен', color: '#fb923c', isInitial: false, sortOrder: 50, allowedTransitions: ['completed'] },
+      { entityType: 'order', name: 'completed', label: 'Выполнен',       color: '#34d399', isInitial: false, sortOrder: 60, allowedTransitions: [] },
+      { entityType: 'order', name: 'cancelled',  label: 'Отменён',       color: '#ef4444', isInitial: false, sortOrder: 70, allowedTransitions: [] },
+    ]);
+    console.log('[Seed] Order statuses created');
+  }
+
+  // 1.75. WorkTypes
+  const wtCount = await WorkTypeModel.countDocuments();
+  if (wtCount === 0) {
+    await WorkTypeModel.insertMany([
+      { name: 'welding', label: 'Сварка', section: 'work', icon: 'pi pi-wrench', sortOrder: 10, color: '#6366f1' },
+      { name: 'assembly', label: 'Сборка', section: 'work', icon: 'pi pi-cog', sortOrder: 20, color: '#8b5cf6' },
+      { name: 'painting', label: 'Покраска', section: 'work', icon: 'pi pi-palette', sortOrder: 30, color: '#ec4899' },
+      { name: 'electrical', label: 'Электромонтаж', section: 'task', icon: 'pi pi-bolt', sortOrder: 10, color: '#14b8a6' },
+      { name: 'design', label: 'Проектирование', section: 'task', icon: 'pi pi-pencil', sortOrder: 20, color: '#f97316' },
+      { name: 'drafting', label: 'Разработка КД', section: 'drawing', icon: 'pi pi-file-pdf', sortOrder: 10, color: '#0ea5e9' },
+    ]);
+    console.log('[Seed] WorkTypes created');
   }
 
   // 2. Products
@@ -103,19 +173,20 @@ async function seed(): Promise<void> {
     console.log('[Seed] Counterparties created');
   }
 
-  // 4. Settings
-  const settingCount = await SettingModel.countDocuments();
-  if (settingCount === 0) {
-    await SettingModel.insertMany([
-      { key: 'kp_validity_days', value: 30, label: 'Срок действия КП (дней)', group: 'kp' },
-      { key: 'kp_prepayment_percent', value: 50, label: 'Предоплата по умолчанию (%)', group: 'kp' },
-      { key: 'kp_production_days', value: 30, label: 'Срок производства (дней)', group: 'kp' },
-      { key: 'kp_vat_percent', value: 20, label: 'НДС по умолчанию (%)', group: 'kp' },
-      { key: 'passport_warranty_text', value: 'Гарантия 12 месяцев с даты отгрузки', label: 'Текст гарантии (паспорт)', group: 'passport' },
-      { key: 'passport_storage_text', value: 'Хранить в сухом месте при t от +5 до +40°C', label: 'Текст условий хранения (паспорт)', group: 'passport' },
-    ]);
-    console.log('[Seed] Settings created');
+  // 4. Settings (с upsert — всегда обновляем, если ключ уже есть)
+  const defaultSettings = [
+    { key: 'kp_validity_days', value: 30, label: 'Срок действия КП (дней)', group: 'kp' },
+    { key: 'kp_prepayment_percent', value: 50, label: 'Предоплата по умолчанию (%)', group: 'kp' },
+    { key: 'kp_production_days', value: 30, label: 'Срок производства (дней)', group: 'kp' },
+    { key: 'kp_vat_percent', value: 20, label: 'НДС по умолчанию (%)', group: 'kp' },
+    { key: 'passport_warranty_text', value: 'Гарантия 12 месяцев с даты отгрузки', label: 'Текст гарантии (паспорт)', group: 'passport' },
+    { key: 'passport_storage_text', value: 'Хранить в сухом месте при t от +5 до +40°C', label: 'Текст условий хранения (паспорт)', group: 'passport' },
+    { key: 'product_units', value: '["шт","м","кг","л","усл.","компл","м²","м³","уп.","пач.","рул.","лист"]', label: 'Единицы измерения товаров', group: 'product' },
+  ];
+  for (const s of defaultSettings) {
+    await SettingModel.updateOne({ key: s.key }, { $set: s }, { upsert: true });
   }
+  console.log('[Seed] Settings synced');
 
   await mongoose.disconnect();
   console.log('[Seed] Done! Логины: admin/admin123, manager/manager123');

@@ -48,6 +48,17 @@ export async function upsert(req: Request, res: Response, next: NextFunction): P
   }
 }
 
+export async function patchByKey(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const key = req.params.key as string;
+    const { value } = req.body as { value: unknown };
+    const setting = await settingsService.upsert({ key, value });
+    res.json({ data: setting });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function remove(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const key = req.params.key as string;

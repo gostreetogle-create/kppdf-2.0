@@ -36,11 +36,17 @@ export async function create(data: Omit<IProduct, '_id' | 'createdAt' | 'updated
   if (!data.name || data.price === undefined || !data.unit || !data.kind) {
     throw new ValidationError('name, price, unit, kind are required');
   }
+  if (data.kind === 'COMPLEX' && (!data.components || data.components.length < 1)) {
+    throw new ValidationError('COMPLEX must have at least 1 component');
+  }
   const doc = await ProductModel.create(data);
   return toJSON(doc);
 }
 
 export async function update(id: string, data: Partial<Omit<IProduct, '_id' | 'createdAt' | 'updatedAt'>>): Promise<IProduct> {
+  if (data.kind === 'COMPLEX' && (!data.components || data.components.length < 1)) {
+    throw new ValidationError('COMPLEX must have at least 1 component');
+  }
   const doc = await ProductModel.findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true });
   if (!doc) throw new NotFoundError('Product', id);
   return toJSON(doc);

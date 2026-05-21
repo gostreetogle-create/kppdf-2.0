@@ -1,0 +1,79 @@
+<div class="order-list">
+  <div class="order-list__toolbar">
+    <div class="order-list__toolbar-left">
+      <span class="p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          placeholder="Поиск по номеру или контрагенту..."
+          [ngModel]="search()"
+          (ngModelChange)="onSearch($event)"
+          class="order-list__search"
+        />
+      </span>
+      <p-select
+        [options]="priorityOptions"
+        placeholder="Приоритет"
+        (onChange)="onPriorityFilter($event.value)"
+        styleClass="order-list__filter"
+      />
+    </div>
+    <div class="order-list__toolbar-right">
+      <button pButton label="Создать заказ" icon="pi pi-plus" routerLink="/orders/create"></button>
+    </div>
+  </div>
+
+  @if (loading() && orders().length === 0) {
+    <div class="order-list__skeleton">
+      @for (_ of [1,2,3,4,5]; track $index) {
+        <p-skeleton width="100%" height="48px" />
+      }
+    </div>
+  } @else {
+    <p-table
+      [value]="orders()"
+      [loading]="loading()"
+      [paginator]="true"
+      [rows]="20"
+      sortField="createdAt"
+      [sortOrder]="-1"
+      styleClass="p-datatable-striped"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="number">Номер <p-sortIcon field="number" /></th>
+          <th pSortableColumn="counterpartyName">Контрагент <p-sortIcon field="counterpartyName" /></th>
+          <th pSortableColumn="priority">Приоритет <p-sortIcon field="priority" /></th>
+          <th pSortableColumn="totalSum">Сумма <p-sortIcon field="totalSum" /></th>
+          <th pSortableColumn="statusId">Статус <p-sortIcon field="statusId" /></th>
+          <th pSortableColumn="createdAt">Дата <p-sortIcon field="createdAt" /></th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-order>
+        <tr>
+          <td><a [routerLink]="['/orders', order._id]" class="order-list__link">{{ order.number }}</a></td>
+          <td>{{ order.counterpartyName }}</td>
+          <td>
+            <p-tag
+              [value]="order.priority"
+              [severity]="prioritySeverity[order.priority] || 'info'"
+            />
+          </td>
+          <td>{{ order.totalSum | number:'1.2-2' }} ₽</td>
+          <td>{{ order.statusId }}</td>
+          <td>{{ order.createdAt | date:'dd.MM.yyyy' }}</td>
+          <td>
+            <button
+              pButton
+              icon="pi pi-eye"
+              class="p-button-text p-button-sm"
+              [routerLink]="['/orders', order._id]"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  }
+</div>

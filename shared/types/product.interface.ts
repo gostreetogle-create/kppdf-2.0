@@ -1,4 +1,13 @@
-export type ProductKind = 'ITEM' | 'SERVICE' | 'WORK';
+export type ProductKind = 'ITEM' | 'SERVICE' | 'WORK' | 'COMPLEX';
+
+/** Снимок товара внутри комплекса */
+export interface IProductComponent {
+  productId: string;
+  name: string;
+  unit: string;
+  price: number;
+  qty: number;
+}
 
 export interface IProduct {
   _id: string;
@@ -13,6 +22,8 @@ export interface IProduct {
   subcategory?: string;
   specId?: string;
   isActive: boolean;
+  /** Только для kind = COMPLEX — состав комплекса */
+  components?: IProductComponent[];
   createdAt?: string;
   updatedAt?: string;
 }

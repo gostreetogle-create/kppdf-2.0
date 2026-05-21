@@ -6,6 +6,8 @@ export interface IUser {
   email: string;
   displayName: string;
   role: UserRole;
+  /** Массив кодов разрешений — вычисляется из роли при логине */
+  permissions?: string[];
   isActive: boolean;
   mustChangePassword?: boolean;
   lastLoginAt?: string;

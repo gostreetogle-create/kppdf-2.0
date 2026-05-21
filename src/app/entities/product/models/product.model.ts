@@ -1,6 +1,6 @@
-import type { IProduct, ProductKind } from '../../../shared/types/product.interface';
+import type { IProduct, IProductComponent, ProductKind } from '../../../shared/types/product.interface';
 
-export type { ProductKind };
+export type { ProductKind, IProductComponent };
 export type { IProduct };
 
 /** Фронтенд-модель товара — расширяет IProduct полем id для удобства */
@@ -17,6 +17,7 @@ export class Product implements IProduct {
   subcategory?: string;
   specId?: string;
   isActive!: boolean;
+  components?: IProductComponent[];
   createdAt?: string;
   updatedAt?: string;
 

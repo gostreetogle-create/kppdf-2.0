@@ -1,0 +1,51 @@
+<div class="order-sections">
+  @for (section of groupedSections(); track section.key) {
+    <p-card class="order-sections__card">
+      <ng-template pTemplate="header">
+        <div class="order-sections__header">
+          <div class="order-sections__header-left">
+            <i [class]="section.icon"></i>
+            <span class="order-sections__title">{{ section.label }}</span>
+            <span class="order-sections__count">{{ section.items.length }}</span>
+          </div>
+          <div class="order-sections__header-right">
+            <span class="order-sections__total">
+              {{ sectionTotal(section.items) | number:'1.2-2' }} ₽
+            </span>
+          </div>
+        </div>
+      </ng-template>
+
+      <div class="order-sections__items"
+           (dragover)="onDragOver($event)"
+           (drop)="onDrop(section.key, -1, $event)">
+        @for (item of section.items; track item._id; let idx = $index) {
+          <div class="order-sections__item"
+               draggable="true"
+               (dragstart)="onDragStart(section.key, idx, $event)"
+               (dragover)="onDragOver($event)"
+               (drop)="onDrop(section.key, idx, $event)"
+               (click)="itemClick.emit(item)">
+            <div class="order-sections__item-info">
+              <div class="order-sections__item-name">{{ item.snapshot.name }}</div>
+              <div class="order-sections__item-meta">
+                <span>{{ item.snapshot.sku }}</span>
+                <p-tag [value]="kindLabel(item.kind)" [severity]="kindSeverity(item.kind)" />
+                <span>{{ item.quantity }} {{ item.snapshot.unit }}</span>
+                <span>× {{ item.snapshot.price | number:'1.2-2' }} ₽</span>
+              </div>
+            </div>
+            <div class="order-sections__item-total">
+              <strong>{{ item.totalPrice | number:'1.2-2' }} ₽</strong>
+            </div>
+          </div>
+        } @empty {
+          <div class="order-sections__empty">
+            <i [class]="section.icon"></i>
+            <span>Нет позиций</span>
+          </div>
+        }
+      </div>
+    </p-card>
+  }
+</div>

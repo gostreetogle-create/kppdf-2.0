@@ -7,6 +7,8 @@ import { ProductListPageComponent } from './pages/product-list/product-list-page
 import { CounterpartyListPageComponent } from './pages/counterparty-list/counterparty-list-page.component';
 import { KpListPageComponent } from './pages/kp-list/kp-list-page.component';
 import { SettingsPageComponent } from './pages/settings/settings-page.component';
+import { OrderListPageComponent } from './pages/orders/order-list-page.component';
+import { OrderViewPageComponent } from './pages/orders/order-view-page.component';
 
 export const routes: Routes = [
   {
@@ -42,6 +44,14 @@ export const routes: Routes = [
       {
         path: 'settings',
         component: SettingsPageComponent,
+      },
+      {
+        path: 'orders',
+        component: OrderListPageComponent,
+      },
+      {
+        path: 'orders/:id',
+        component: OrderViewPageComponent,
       },
     ],
   },

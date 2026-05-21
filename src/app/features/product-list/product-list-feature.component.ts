@@ -59,6 +59,7 @@ export class ProductListFeatureComponent {
     { value: 'ITEM', label: 'Товары' },
     { value: 'SERVICE', label: 'Услуги' },
     { value: 'WORK', label: 'Работы' },
+    { value: 'COMPLEX', label: 'Комплексы' },
   ];
 
   /** Состояние загрузки списка */
@@ -124,6 +125,30 @@ export class ProductListFeatureComponent {
     });
   }
 
+  // ---- Дублирование ----
+  onDuplicate(product: Product): void {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { _id, id, createdAt, updatedAt, ...rest } = product;
+    const duplicate: ProductFormValue = {
+      ...rest,
+      name: `${rest.name} (копия)`,
+      images: rest.images ?? [],
+      code: rest.code ?? '',
+      category: rest.category ?? '',
+      subcategory: rest.subcategory ?? '',
+      components: rest.components ?? [],
+    };
+
+    this.productService.create(duplicate).subscribe({
+      next: (created) => {
+        this.editingProduct.set(created);
+        this.showDialog.set(true);
+        this.messageService.add({ severity: 'success', summary: 'Готово', detail: 'Товар продублирован' });
+      },
+      error: (err: Error) => this.messageService.add({ severity: 'error', summary: 'Ошибка', detail: err.message ?? 'Не удалось дублировать товар' }),
+    });
+  }
+
   // ---- Отмена диалога ----
   onCancelDialog(): void {
     this.showDialog.set(false);
@@ -157,11 +182,12 @@ export class ProductListFeatureComponent {
   }
 
   /** Severity для p-tag по типу товара */
-  kindSeverity(kind: ProductKind): 'info' | 'success' | 'warn' {
+  kindSeverity(kind: ProductKind): 'info' | 'success' | 'warn' | 'contrast' {
     switch (kind) {
       case 'ITEM': return 'info';
       case 'SERVICE': return 'success';
       case 'WORK': return 'warn';
+      case 'COMPLEX': return 'contrast';
     }
   }
 }

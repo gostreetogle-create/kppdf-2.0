@@ -25,15 +25,14 @@ function calcTotal(items: IKpItem[]): number {
   }, 0);
 }
 
-/** Сгенерировать номер КП: КП-2026-0001 */
-async function generateNumber(kpType: KpType): Promise<string> {
-  const year = new Date().getFullYear();
-  const prefix = kpType === 'standard' ? 'КП' : kpType === 'response' ? 'КО' : 'КП';
+/** Сгенерировать номер КП: КП-001, КП-002 и т.д. */
+async function generateNumber(_kpType: KpType): Promise<string> {
+  const prefix = 'КП';
 
   const last = await KpModel.findOne({
-    'metadata.number': { $regex: `^${prefix}-${year}-` },
+    'metadata.number': { $regex: `^${prefix}-\\d+$` },
   })
-    .sort({ 'metadata.number': -1 })
+    .sort({ createdAt: -1 })
     .select('metadata.number');
 
   let seq = 1;
@@ -42,7 +41,12 @@ async function generateNumber(kpType: KpType): Promise<string> {
     seq = parseInt(parts[parts.length - 1], 10) + 1;
   }
 
-  return `${prefix}-${year}-${String(seq).padStart(4, '0')}`;
+  return `${prefix}-${String(seq).padStart(3, '0')}`;
+}
+
+/** Публичный метод — получить следующий номер не создавая КП */
+export async function generateNextNumber(kpType: KpType): Promise<string> {
+  return generateNumber(kpType);
 }
 
 function toJSON(doc: IKpDocument): IKp {

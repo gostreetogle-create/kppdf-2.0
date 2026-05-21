@@ -71,6 +71,16 @@ export async function changeStatus(req: Request, res: Response, next: NextFuncti
   }
 }
 
+export async function getNextNumber(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const kpType = (req.query.kpType as string | undefined) ?? 'standard' as any;
+    const number = await kpService.generateNextNumber(kpType as any);
+    res.json({ data: number });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function recalculate(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const id = req.params.id as string;

@@ -5,6 +5,7 @@ const LABELS: Record<ProductKind, string> = {
   ITEM: 'Товар',
   SERVICE: 'Услуга',
   WORK: 'Работа',
+  COMPLEX: 'Комплекс',
 };
 
 @Pipe({

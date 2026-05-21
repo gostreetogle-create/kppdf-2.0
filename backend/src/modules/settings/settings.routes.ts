@@ -10,8 +10,9 @@ router.get('/group/:group', settingsController.getByGroup);
 router.get('/:key', settingsController.getByKey);
 router.get('/', settingsController.getAll);
 
-// POST/PUT/DELETE — под токеном
+// POST/PUT/PATCH/DELETE — под токеном
 router.put('/:key', authenticate, authorize('owner', 'admin'), settingsController.upsert);
+router.patch('/:key', authenticate, authorize('owner', 'admin'), settingsController.patchByKey);
 router.post('/', authenticate, authorize('owner', 'admin'), settingsController.upsert);
 router.delete('/:key', authenticate, authorize('owner', 'admin'), settingsController.remove);
 

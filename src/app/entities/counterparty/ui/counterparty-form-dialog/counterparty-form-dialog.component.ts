@@ -68,6 +68,7 @@ export interface CounterpartyFormValue {
               formControlName="legalForm"
               [options]="legalFormOptions"
               [style]="{ width: '100%' }"
+              appendTo="body"
             />
           </div>
           <div class="cparty-form__field cparty-form__field--grow">
@@ -80,6 +81,7 @@ export interface CounterpartyFormValue {
               optionValue="value"
               [style]="{ width: '100%' }"
               placeholder="Выберите роли"
+              appendTo="body"
             />
           </div>
         </div>

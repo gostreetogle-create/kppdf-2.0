@@ -23,6 +23,7 @@ export class AdminLayoutComponent {
     { path: '/products', label: 'Товары', icon: 'pi pi-box' },
     { path: '/counterparties', label: 'Контрагенты', icon: 'pi pi-building' },
     { path: '/kp', label: 'КП', icon: 'pi pi-file' },
+    { path: '/orders', label: 'Заказы', icon: 'pi pi-shopping-cart' },
     { path: '/settings', label: 'Настройки', icon: 'pi pi-cog' },
   ];
 

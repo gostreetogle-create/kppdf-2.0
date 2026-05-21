@@ -32,6 +32,13 @@ export class KpService {
   readonly items: Signal<ResourceState<Kp[]>> = this._items;
   reload(): void { this._refresh$.next(); }
 
+  getNextNumber(kpType?: string): Observable<string> {
+    const params = kpType ? `?kpType=${encodeURIComponent(kpType)}` : '';
+    return this.api.get<{ data: string }>(`/kp/next-number${params}`).pipe(
+      map((res) => res.data as unknown as string),
+    );
+  }
+
   create(data: Partial<IKp>): Observable<Kp> {
     return this.api.post<IKp>('/kp', data).pipe(
       map((res) => { this.reload(); return new Kp(res.data); }),

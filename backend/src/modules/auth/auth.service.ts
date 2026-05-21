@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { config } from '../../core/config';
 import { UserModel, IUserDocument } from './auth.model';
+import { RoleModel } from '../role/role.model';
 import { AppError, UnauthorizedError } from '../../shared/errors';
 import type { ILoginRequest, ILoginResponse, IAuthTokens, IUser, UserRole } from '@shared/types/user.interface';
 
@@ -19,13 +20,24 @@ function generateTokens(user: IUserDocument): IAuthTokens {
   return { accessToken, refreshToken, expiresIn: 7 * 24 * 60 * 60 };
 }
 
-function toUserJSON(doc: IUserDocument): IUser {
+async function resolvePermissions(roleName: string): Promise<string[]> {
+  try {
+    const role = await RoleModel.findOne({ name: roleName }).lean();
+    return role?.permissions ?? [];
+  } catch {
+    return [];
+  }
+}
+
+async function toUserJSON(doc: IUserDocument): Promise<IUser> {
+  const permissions = await resolvePermissions(doc.role);
   return {
     _id: doc._id.toString(),
     username: doc.username,
     email: doc.email,
     displayName: doc.displayName,
     role: doc.role as UserRole,
+    permissions,
     isActive: doc.isActive,
     mustChangePassword: doc.mustChangePassword,
     lastLoginAt: doc.lastLoginAt,
@@ -49,7 +61,7 @@ export async function register(data: { username: string; email: string; password
     role: data.role || 'manager',
   });
 
-  return { user: toUserJSON(user), tokens: generateTokens(user) };
+  return { user: await toUserJSON(user), tokens: generateTokens(user) };
 }
 
 export async function login(data: ILoginRequest): Promise<ILoginResponse> {
@@ -60,13 +72,13 @@ export async function login(data: ILoginRequest): Promise<ILoginResponse> {
   if (!valid) throw new UnauthorizedError('Invalid credentials');
 
   await UserModel.findByIdAndUpdate(user._id, { lastLoginAt: new Date().toISOString() });
-  return { user: toUserJSON(user), tokens: generateTokens(user) };
+  return { user: await toUserJSON(user), tokens: generateTokens(user) };
 }
 
 export async function getMe(userId: string): Promise<IUser> {
   const user = await UserModel.findById(userId);
   if (!user) throw new AppError(404, 'User not found');
-  return toUserJSON(user);
+  return await toUserJSON(user);
 }
 
 export async function refreshAccessToken(refreshToken: string): Promise<IAuthTokens> {

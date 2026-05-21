@@ -25,5 +25,11 @@
 
   <ng-template pTemplate="content">
     <span class="product-card__price">{{ product().price | price }}</span>
+    @if (componentCount() > 0) {
+      <div class="product-card__components">
+        <i class="pi pi-box"></i>
+        <span>{{ componentLabel() }}</span>
+      </div>
+    }
   </ng-template>
 </p-card>

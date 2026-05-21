@@ -94,6 +94,15 @@
                 (click)="onEdit(product)"
               />
               <p-button
+                icon="pi pi-copy"
+                severity="help"
+                [text]="true"
+                [rounded]="true"
+                pTooltip="Дублировать"
+                tooltipPosition="top"
+                (click)="onDuplicate(product)"
+              />
+              <p-button
                 icon="pi pi-trash"
                 severity="danger"
                 [text]="true"
