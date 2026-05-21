@@ -1,87 +1,59 @@
 #!/usr/bin/env bash
+# KPPDF 2.0 — Скрипт деплоя
+# Запускать на сервере: bash deploy/deploy.sh
 set -euo pipefail
 
-# ============================================================
-# KPPDF 2.0 — Deploy Script
-# Usage: sudo bash deploy/deploy.sh [--seed]
-# ============================================================
+# === Конфигурация ===
+APP_DIR="/var/www/kppdf"
+REPO_URL="git@github.com:your-org/kppdf-2.0.git"
+BRANCH="main"
+NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+BACKEND_ENV_FILE="$APP_DIR/backend/.env"
 
-APP_DIR="/opt/kppdf-2.0"
-BACKEND_DIR="$APP_DIR/backend"
-FRONTEND_DIR="$APP_DIR/dist/kppdf-2.0/browser"
-NVM_DIR="$HOME/.nvm"
-NODE_VERSION="20"
+echo "=== KPPDF 2.0 Deploy ==="
+date
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
+# 1. Загрузка nvm
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+    \. "$NVM_DIR/nvm.sh"
+    nvm use 22 || nvm install 22
+fi
 
-log()  { echo -e "${GREEN}[deploy]${NC} $1"; }
-warn() { echo -e "${YELLOW}[warn]${NC} $1"; }
-err()  { echo -e "${RED}[error]${NC} $1"; exit 1; }
-
-# ---- Проверки ----
-[[ $EUID -eq 0 ]] || err "Запустите с sudo: sudo bash $0"
-
-cd "$APP_DIR" || err "Директория $APP_DIR не найдена"
-
-# ---- Git ----
-log "Pull latest code..."
-git fetch origin
-git reset --hard origin/main
-git clean -fd
-
-# ---- Backend ----
-log "Install backend deps..."
-cd "$BACKEND_DIR"
-npm ci --omit=dev
-npm run build
-
-# ---- Frontend ----
-log "Install frontend deps..."
+# 2. Получение последней версии кода
+echo "[1/6] Pulling code from $BRANCH..."
 cd "$APP_DIR"
-npm ci --omit=dev
-npx ng build --configuration=production
+git fetch origin
+git reset --hard "origin/$BRANCH"
 
-# ---- Environment ----
-if [[ ! -f "$BACKEND_DIR/.env" ]]; then
-    warn ".env не найден, копирую .env.production"
-    cp "$APP_DIR/deploy/.env.production" "$BACKEND_DIR/.env"
-fi
+# 3. Установка зависимостей фронтенда
+echo "[2/6] Installing frontend dependencies..."
+npm ci --omit=dev --ignore-scripts 2>/dev/null || npm ci
 
-# ---- MongoDB ----
-if ! systemctl is-active --quiet mongod; then
-    log "Starting MongoDB..."
-    systemctl start mongod
-fi
+# 4. Сборка фронтенда (Angular)
+echo "[3/6] Building frontend..."
+npx ng build --configuration production
 
-# ---- Seed (опционально) ----
-if [[ "${1:-}" == "--seed" ]]; then
-    log "Seeding admin user..."
-    cd "$BACKEND_DIR"
-    npx tsx src/scripts/seed-admin.ts
-fi
+# 5. Установка зависимостей бэкенда
+echo "[4/6] Installing backend dependencies..."
+cd "$APP_DIR/backend"
+npm ci --omit=dev --ignore-scripts 2>/dev/null || npm ci
 
-# ---- Restart backend ----
-log "Restarting backend service..."
-systemctl daemon-reload
-systemctl restart kppdf-backend
-systemctl enable kppdf-backend
+# 6. Сборка бэкенда (TypeScript → JS)
+echo "[5/6] Building backend..."
+npx tsc
 
-# ---- Nginx ----
-log "Reload nginx..."
-cp "$APP_DIR/deploy/nginx.conf" /etc/nginx/sites-available/kppdf
-ln -sf /etc/nginx/sites-available/kppdf /etc/nginx/sites-enabled/
-nginx -t || err "nginx config невалидный"
-systemctl reload nginx
+# 7. Перезапуск сервисов
+echo "[6/6] Restarting services..."
+sudo systemctl daemon-reload
+sudo systemctl restart kppdf
+sudo systemctl reload nginx 2>/dev/null || sudo systemctl restart nginx
 
-# ---- Health check ----
-sleep 2
-HEALTH=$(curl -s http://localhost:3000/health || echo '{"status":"fail"}')
-if echo "$HEALTH" | grep -q '"status":"ok"'; then
-    log "✅ Deploy success! Health: $HEALTH"
+# 8. Проверка
+sleep 3
+HEALTH_CHECK=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3000/health)
+if [ "$HEALTH_CHECK" = "200" ]; then
+    echo "=== ✅ Deploy successful! Health check: $HEALTH_CHECK ==="
 else
-    err "Health check failed: $HEALTH"
+    echo "=== ⚠️  Deploy completed but health check returned: $HEALTH_CHECK ==="
+    exit 1
 fi

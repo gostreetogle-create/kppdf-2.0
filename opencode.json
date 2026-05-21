@@ -7,6 +7,7 @@
     ".roo/rules/angular-signals.md",
     ".roo/rules/ui-standards.md",
     ".roo/rules/erp-core.md",
+    ".roo/rules/plm-spec.md",
     ".opencode/agents/orchestrator.md",
     ".opencode/plans/00-plan-index.md"
   ],
@@ -34,6 +35,16 @@
           "backend-specialist": "allow",
           "deploy-specialist": "allow",
           "api-specialist": "allow",
+          "drawing-specialist": "allow",
+          "gantt-specialist": "allow",
+          "material-specialist": "allow",
+          "notification-specialist": "allow",
+          "order-specialist": "allow",
+          "role-specialist": "allow",
+          "work-specialist": "allow",
+          "meta-architect": "allow",
+          "production-planner": "allow",
+          "compliance-validator": "allow",
           "*": "deny"
         }
       }

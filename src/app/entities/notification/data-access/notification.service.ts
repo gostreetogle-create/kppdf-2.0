@@ -5,7 +5,7 @@ import type { INotification } from '../models/notification.model';
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   private readonly api = inject(ApiService);
-  private readonly endpoint = 'notifications';
+  private readonly endpoint = '/notifications';
 
   private readonly _unreadCount = signal(0);
   readonly unreadCount = this._unreadCount.asReadonly();

@@ -6,7 +6,7 @@ import type { IWorkTask } from '../models/work-task.model';
 @Injectable({ providedIn: 'root' })
 export class WorkTaskService {
   private readonly api = inject(ApiService);
-  private readonly endpoint = 'work-tasks';
+  private readonly endpoint = '/work-tasks';
 
   async getByOrderItem(orderItemId: string): Promise<IWorkTask[]> {
     const res = await firstValueFrom(this.api.get<IWorkTask[]>(`${this.endpoint}/by-order-item/${orderItemId}`));

@@ -18,6 +18,18 @@ permission:
     backend-specialist: allow
     deploy-specialist: allow
     api-specialist: allow
+    status-specialist: allow
+    audit-specialist: allow
+    drawing-specialist: allow
+    gantt-specialist: allow
+    material-specialist: allow
+    notification-specialist: allow
+    order-specialist: allow
+    role-specialist: allow
+    work-specialist: allow
+    meta-architect: allow
+    production-planner: allow
+    compliance-validator: allow
     "*": deny
 ---
 
@@ -41,12 +53,17 @@ permission:
 | `@backend-specialist` | Express сервер, MongoDB, middleware, routes |
 | `@deploy-specialist` | nginx + systemd, deploy.sh, HTTPS, мониторинг |
 | `@api-specialist` | API-контракты, DTO, shared/types, версионирование |
+| `@notification-specialist` | Уведомления (email, Telegram, in-app) |
+| `@role-specialist` | Роли, права доступа, матрица permissions |
+| `@audit-specialist` | Аудит изменений, история операций, tracking |
+| `@status-specialist` | Статусы сущностей, EntityStatus, transitions |
 
 ### Фронтенд
 | Имя | Назначение |
 |---|---|
 | `@ui-specialist` | **Только PrimeNG-компоненты.** BEM — исключительно для layout. |
 | `@pdf-specialist` | PDF-генерация, Puppeteer, jsPDF, шаблоны |
+| `@drawing-specialist` | Чертежи, схемы, CAD-интеграция, визуализация |
 
 ### Доменные (бизнес-логика)
 | Имя | Назначение |
@@ -56,6 +73,13 @@ permission:
 | `@counterparty-specialist` | Контрагенты, DaData, INN/KPP, branding templates |
 | `@auth-specialist` | JWT, bcrypt, RBAC, permissions, login/refresh |
 | `@settings-specialist` | Настройки системы, backups, bulk import/export |
+| `@order-specialist` | Заказы (Order, OrderItem), lifecycle, статусы, канбан |
+| `@material-specialist` | MaterialRequest, приход/расход, складской учёт |
+| `@work-specialist` | WorkTask, наряды, производственные задания |
+| `@gantt-specialist` | Диаграммы Ганта, планирование, сроки, ресурсы |
+| `@meta-architect` | EAV-атрибуты, BOM-деревья, Product Categories, compliance |
+| `@production-planner` | BOM → закупки, склад, расчёт себестоимости и сроков |
+| `@compliance-validator` | Проверка изделия на соответствие ТЗ клиента и ГОСТ |
 
 ## Глобальные правила (всегда, без исключений)
 
@@ -93,6 +117,19 @@ permission:
 - **Контрагенты** → `@counterparty-specialist`
 - **Авторизация/безопасность** → `@auth-specialist`
 - **Настройки/бэкапы** → `@settings-specialist`
+- **Аудит / история изменений** → `@audit-specialist`
+- **Статусы / EntityStatus** → `@status-specialist`
+- **Заказы / Order lifecycle** → `@order-specialist`
+- **Материалы / склад** → `@material-specialist`
+- **Наряды / производство** → `@work-specialist`
+- **Гант / сроки** → `@gantt-specialist`
+- **Чертежи / CAD** → `@drawing-specialist`
+- **EAV-атрибуты / BOM / Категории** → `@meta-architect`
+- **Роли / permissions** → `@role-specialist`
+- **Уведомления** → `@notification-specialist`
+- **BOM → планирование / себестоимость / закупки** → `@production-planner`
+- **Compliance / соответствие ТЗ и ГОСТ** → `@compliance-validator`
+- **Дашборд / агрегация данных** → `@api-specialist` (данные) + `@ui-specialist` (отображение)
 
 ### Критерии делегирования
 Если задача соответствует хотя бы **одному** из условий → делегируй:

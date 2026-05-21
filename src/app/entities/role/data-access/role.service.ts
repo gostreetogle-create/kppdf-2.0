@@ -5,7 +5,7 @@ import type { IRole } from '../models/role.model';
 @Injectable({ providedIn: 'root' })
 export class RoleService {
   private readonly api = inject(ApiService);
-  private readonly endpoint = 'roles';
+  private readonly endpoint = '/roles';
 
   private readonly _list = signal<IRole[]>([]);
   readonly list = this._list.asReadonly();

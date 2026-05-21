@@ -3,22 +3,22 @@ import { NotFoundError, ValidationError } from '../../shared/errors';
 import type { IProduct, ProductKind } from '@shared/types/product.interface';
 
 function toJSON(doc: IProductDocument): IProduct {
-  return doc.toJSON() as unknown as IProduct;
+  return { id: doc._id.toString(), ...doc.toJSON() } as unknown as IProduct;
 }
 
 export async function getAll(filters?: {
   kind?: ProductKind;
-  isActive?: boolean;
+  status?: string;
   search?: string;
 }): Promise<IProduct[]> {
   const query: any = {};
 
   if (filters?.kind) query.kind = filters.kind;
-  if (filters?.isActive !== undefined) query.isActive = filters.isActive;
+  if (filters?.status) query.status = filters.status;
   if (filters?.search) {
     query.$or = [
       { name: { $regex: filters.search, $options: 'i' } },
-      { code: { $regex: filters.search, $options: 'i' } },
+      { sku: { $regex: filters.search, $options: 'i' } },
     ];
   }
 
@@ -32,21 +32,15 @@ export async function getById(id: string): Promise<IProduct> {
   return toJSON(doc);
 }
 
-export async function create(data: Omit<IProduct, '_id' | 'createdAt' | 'updatedAt'>): Promise<IProduct> {
-  if (!data.name || data.price === undefined || !data.unit || !data.kind) {
-    throw new ValidationError('name, price, unit, kind are required');
-  }
-  if (data.kind === 'COMPLEX' && (!data.components || data.components.length < 1)) {
-    throw new ValidationError('COMPLEX must have at least 1 component');
+export async function create(data: Omit<IProduct, 'id' | 'category' | 'specification'>): Promise<IProduct> {
+  if (!data.name || !data.sku || !data.categoryId || !data.kind) {
+    throw new ValidationError('name, sku, categoryId, kind are required');
   }
   const doc = await ProductModel.create(data);
   return toJSON(doc);
 }
 
-export async function update(id: string, data: Partial<Omit<IProduct, '_id' | 'createdAt' | 'updatedAt'>>): Promise<IProduct> {
-  if (data.kind === 'COMPLEX' && (!data.components || data.components.length < 1)) {
-    throw new ValidationError('COMPLEX must have at least 1 component');
-  }
+export async function update(id: string, data: Partial<Omit<IProduct, 'id' | 'category' | 'specification'>>): Promise<IProduct> {
   const doc = await ProductModel.findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true });
   if (!doc) throw new NotFoundError('Product', id);
   return toJSON(doc);

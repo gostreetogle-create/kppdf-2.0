@@ -9,3 +9,10 @@ export {
   ROLE_PERMISSIONS,
   can,
 } from './permissions';
+
+export {
+  INSTALLATION_METHODS,
+  SURFACE_TREATMENTS,
+  COATING_TYPES,
+  WOOD_GRADES,
+} from './product.constants';

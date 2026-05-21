@@ -5,7 +5,7 @@ import type { IMaterialRequest } from '../models/material-request.model';
 @Injectable({ providedIn: 'root' })
 export class MaterialRequestService {
   private readonly api = inject(ApiService);
-  private readonly endpoint = 'material-requests';
+  private readonly endpoint = '/material-requests';
 
   async getByOrder(orderId: string): Promise<IMaterialRequest[]> {
     const res = await this.api.get<{ data: IMaterialRequest[] }>(`${this.endpoint}/by-order/${orderId}`);

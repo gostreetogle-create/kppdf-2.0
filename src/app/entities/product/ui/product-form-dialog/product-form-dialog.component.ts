@@ -11,9 +11,17 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { ImageUploaderComponent } from '../../../../shared/ui/image-uploader/image-uploader.component';
 import { Product, ProductKind } from '../../models/product.model';
-import type { IProductComponent } from '../../../../shared/types/product.interface';
 import { ProductService } from '../../data-access/product.service';
 import { SettingsService } from '../../../settings/data-access/settings.service';
+
+/** @deprecated Will be replaced by BOMTreeEditor in PLM architecture */
+export interface IProductComponent {
+  productId: string;
+  name: string;
+  unit: string;
+  price: number;
+  qty: number;
+}
 
 export interface ProductFormValue {
   name: string;
@@ -368,11 +376,11 @@ export class ProductFormDialogComponent implements OnInit {
 
   /** Доступные товары для добавления в комплекс (не COMPLEX, исключая редактируемый) */
   readonly availableProducts = computed(() => {
-    const editingId = this.product()?._id;
+    const editingId = this.product()?.id;
     const all = this.productService.products().data ?? [];
     return all
-      .filter((p) => p.kind !== 'COMPLEX' && p._id !== editingId)
-      .map((p) => ({ value: p._id, label: p.name }));
+      .filter((p) => p.kind !== 'COMPLEX' && p.id !== editingId)
+      .map((p) => ({ value: p.id, label: p.name }));
   });
 
   ngOnInit(): void {
@@ -380,18 +388,15 @@ export class ProductFormDialogComponent implements OnInit {
     if (product) {
       this.form.patchValue({
         name: product.name,
-        code: product.code ?? '',
-        description: product.description,
-        price: product.price,
-        unit: product.unit,
+        code: product.sku ?? '',
+        description: '',
+        price: 0,
+        unit: 'шт',
         kind: product.kind,
-        category: product.category ?? '',
-        subcategory: product.subcategory ?? '',
-        isActive: product.isActive,
+        category: '',
+        subcategory: '',
+        isActive: product.status === 'active',
       });
-      this.images.set(product.images ?? []);
-      this.components.set(product.components ?? []);
-      // Выставить правильные валидаторы для типа товара
       this.onKindChange();
     }
   }
@@ -430,7 +435,7 @@ export class ProductFormDialogComponent implements OnInit {
     if (!productId) return;
 
     const all = this.productService.products().data ?? [];
-    const source = all.find((p) => p._id === productId);
+    const source = all.find((p) => p.id === productId);
     if (!source) return;
 
     const exists = this.components().some((c) => c.productId === productId);
@@ -439,7 +444,7 @@ export class ProductFormDialogComponent implements OnInit {
     this.components.update((list) => [
       ...list,
       {
-        productId: source._id,
+        productId: source.id,
         name: source.name,
         unit: source.unit,
         price: source.price,

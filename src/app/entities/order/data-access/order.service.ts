@@ -6,7 +6,7 @@ import type { IOrder } from '../models/order.model';
 @Injectable({ providedIn: 'root' })
 export class OrderService {
   private readonly api = inject(ApiService);
-  private readonly endpoint = 'orders';
+  private readonly endpoint = '/orders';
 
   private readonly _list = signal<IOrder[]>([]);
   readonly list = this._list.asReadonly();

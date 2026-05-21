@@ -1,0 +1,46 @@
+# KPPDF 2.0 — systemd unit для backend (Express + MongoDB)
+# Установка:
+#   sudo cp deploy/kppdf.service /etc/systemd/system/kppdf.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable kppdf
+#   sudo systemctl start kppdf
+
+[Unit]
+Description=KPPDF 2.0 Backend (Express)
+After=network.target mongod.service
+Wants=mongod.service
+
+[Service]
+Type=simple
+User=kppdf
+Group=kppdf
+WorkingDirectory=/var/www/kppdf/backend
+
+# Путь к Node.js (через nvm или системный)
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=MONGO_URI=mongodb://127.0.0.1:27017/kppdf
+Environment=JWT_SECRET=<CHANGE_ME>
+Environment=JWT_EXPIRES_IN=7d
+Environment=JWT_REFRESH_EXPIRES_IN=30d
+Environment=CORS_ORIGIN=https://kppdf.example.com
+
+# Запуск продакшен-сборки
+ExecStart=/usr/bin/node dist/app.js
+ExecReload=/bin/kill -HUP $MAINPID
+
+# Рестарт при падении (с задержкой)
+Restart=always
+RestartSec=5
+
+# Лимиты
+LimitNOFILE=65536
+
+# Логирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=kppdf
+
+[Install]
+WantedBy=multi-user.target

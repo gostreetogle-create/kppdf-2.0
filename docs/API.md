@@ -1,213 +1,297 @@
-# KPPDF 2.0 — API Reference
+# API Reference — KPPDF 2.0
 
-Base URL: `/api/v1`
+**Базовый URL**: `/api/v1` (через прокси на `http://localhost:3000`)
 
 ## Аутентификация
 
-### POST /auth/register
-Создать пользователя.
+### POST /api/v1/auth/login
+Вход в систему.
 
 ```json
-// Request
-{ "username": "ivan", "email": "i@ex.ru", "password": "secret123", "displayName": "Иван" }
-// Response 201
-{ "data": { "user": { ... }, "tokens": { "accessToken": "...", "refreshToken": "...", "expiresIn": 604800 } } }
+{ "email": "user@example.com", "password": "..." }
+→ { "data": { "accessToken": "...", "refreshToken": "...", "user": { ... } } }
 ```
 
-### POST /auth/login
-Войти.
+### POST /api/v1/auth/register
+Регистрация нового пользователя (только для администратора).
+
+### POST /api/v1/auth/refresh
+Обновление токена.
+
+### POST /api/v1/auth/logout
+Выход (сброс refresh-токена).
+
+## Товары (Products)
+
+### GET /api/v1/products
+Список товаров.
+
+Параметры: `?kind=ITEM&status=active&search=насос`
 
 ```json
-// Request
-{ "username": "admin", "password": "admin123" }
-// Response 200
-{ "data": { "user": { ... }, "tokens": { ... } } }
+→ { "data": [ { "id": "...", "name": "...", "sku": "...", "kind": "ITEM", "status": "active", "categoryId": "...", "specId": "..." } ] }
 ```
 
-### GET /auth/me
-Текущий пользователь. Требует Bearer token.
+### GET /api/v1/products/:id
+Один товар.
+
+### POST /api/v1/products
+Создать товар.
 
 ```json
-// Response 200
-{ "data": { "user": { "_id": "...", "username": "admin", "role": "owner", ... } } }
+{ "name": "Насос Н-100", "sku": "N-100", "kind": "ITEM", "categoryId": "...", "status": "draft" }
 ```
 
-### POST /auth/refresh
-Обновить accessToken по refreshToken.
+### PUT /api/v1/products/:id
+Обновить товар.
 
-```json
-// Request
-{ "refreshToken": "..." }
-// Response 200
-{ "data": { "tokens": { "accessToken": "...", "refreshToken": "...", "expiresIn": 604800 } } }
-```
-
----
-
-## Продукты (Products)
-
-Все руты требуют `Bearer token`.
-
-### GET /products
-Список продуктов.
-
-**Query:** `?kind=ITEM&isActive=true&search=шкаф`
-
-```json
-// Response 200
-{ "data": [ { "_id": "...", "name": "Шкаф", "price": 45000, "kind": "ITEM", ... } ], "total": 1 }
-```
-
-### GET /products/:id
-Один продукт.
-
-```json
-// Response 200
-{ "data": { ... } }
-```
-
-### POST /products
-Создать. Роли: owner, admin, manager.
-
-```json
-// Request
-{ "name": "Стул", "price": 5000, "unit": "шт", "kind": "ITEM", "description": "..." }
-```
-
-### PUT /products/:id
-Обновить. Роли: owner, admin, manager.
-
-### DELETE /products/:id
-Удалить. Роли: owner, admin.
-
----
+### DELETE /api/v1/products/:id
+Удалить товар.
 
 ## Контрагенты (Counterparties)
 
-Все руты требуют `Bearer token`.
+### GET /api/v1/counterparties
+Список контрагентов.
 
-### GET /counterparties
-Список.
+### GET /api/v1/counterparties/:id
+Один контрагент.
 
-**Query:** `?role=client&isOurCompany=true&search=ООО`
+### POST /api/v1/counterparties
+Создать.
 
-### GET /counterparties/our-companies
-Наши компании (isOurCompany === true).
+### PUT /api/v1/counterparties/:id
+Обновить.
 
-### GET /counterparties/default-initiator
-Компания-инициатор по умолчанию.
+### DELETE /api/v1/counterparties/:id
+Удалить.
 
-### GET /counterparties/:id
-### POST /counterparties
-### PUT /counterparties/:id
-### DELETE /counterparties/:id
-
----
+### GET /api/v1/counterparties/by-inn/:inn
+Поиск по ИНН (DaData).
 
 ## Коммерческие предложения (KP)
 
-### GET /kp
+### GET /api/v1/kp
 Список КП.
 
-**Query:** `?status=draft&counterpartyId=...&search=КП-2026&limit=20&offset=0`
-
-```json
-// Response 200
-{ "data": [ { ... } ], "total": 42 }
-```
-
-### GET /kp/:id
+### GET /api/v1/kp/:id
 Одно КП.
 
-### POST /kp
-Создать КП. Статус: `draft`. Номер генерируется автоматически.
+### GET /api/v1/kp/next-number
+Получить следующий номер КП.
+
+Параметры: `?kpType=standard`
+
+### POST /api/v1/kp
+Создать КП.
+
+### PUT /api/v1/kp/:id
+Обновить.
+
+### DELETE /api/v1/kp/:id
+Удалить.
+
+## Заказы (Orders)
+
+### GET /api/v1/orders
+Список заказов.
+
+Параметры: `?statusId=...&priority=high&search=...`
+
+### GET /api/v1/orders/:id
+Один заказ.
+
+### GET /api/v1/orders/:id/items
+Заказ с позициями.
+
+```json
+→ { "data": { "order": {...}, "items": [...] } }
+```
+
+### POST /api/v1/orders
+Создать заказ.
+
+```json
+{ "counterpartyId": "...", "kpIds": ["..."], "items": [...] }
+```
+
+### PUT /api/v1/orders/:id
+Обновить.
+
+### DELETE /api/v1/orders/:id
+Удалить.
+
+## Позиции заказа (OrderItems)
+
+### GET /api/v1/order-items/by-order/:orderId
+Позиции заказа.
+
+### POST /api/v1/order-items
+Создать позицию.
+
+### PUT /api/v1/order-items/:id
+Обновить.
+
+### DELETE /api/v1/order-items/:id
+Удалить.
+
+## Статусы (EntityStatus)
+
+### GET /api/v1/entity-statuses/:entityType
+Статусы для типа сущности (`order`, `work-task`, `material-request`).
+
+### POST /api/v1/entity-statuses
+Создать статус.
+
+### PUT /api/v1/entity-statuses/:entityType/:statusId
+Обновить.
+
+### DELETE /api/v1/entity-statuses/:entityType/:statusId
+Удалить.
+
+## Категории и спецификации (Spec)
+
+### GET /api/v1/spec/categories
+Все категории.
+
+### GET /api/v1/spec/categories/:id
+Одна категория с шаблоном атрибутов.
+
+### POST /api/v1/spec/categories
+Создать категорию.
+
+### PUT /api/v1/spec/categories/:id
+Обновить.
+
+### DELETE /api/v1/spec/categories/:id
+Удалить.
+
+### GET /api/v1/spec/specs/:specId
+Спецификация изделия (Digital Twin) со всеми атрибутами и BOM.
+
+### POST /api/v1/spec/specs
+Создать спецификацию для товара.
+
+```json
+{ "productId": "...", "categoryId": "..." }
+```
+
+### POST /api/v1/spec/specs/:specId/advance
+Продвинуть жизненный цикл (`as_ordered → as_designed → as_built → as_maintained`).
+
+### POST /api/v1/spec/specs/:specId/bom
+Сохранить BOM-дерево.
+
+```json
+{ "bom": { "id": "...", "type": "assembly", "name": "...", "children": [...] } }
+```
+
+## Производство (Production)
+
+### POST /api/v1/production/flatten-bom
+Разузлование BOM в плоский список материалов.
+
+```json
+{ "bom": {...} }
+→ { "data": { "flattened": [...], "cost": 1234.50, "leadTimeDays": 14 } }
+```
+
+### POST /api/v1/production/cost-rollup
+Расчёт себестоимости по BOM.
+
+### POST /api/v1/production/create-material-requests
+Создать MaterialRequest на основе BOM.
+
+## Compliance (Валидация)
+
+### POST /api/v1/compliance/check
+Проверить соответствие (Ordered vs Designed / Designed vs Built).
 
 ```json
 {
-  "title": "КП на поставку",
-  "kpType": "standard",
-  "recipient": { "name": "ООО Клиент", ... },
-  "companySnapshot": { "companyId": "...", "templateKey": "default", ... },
-  "items": [
-    { "productId": "...", "name": "Шкаф", "price": 45000, "qty": 2, "unit": "шт" }
-  ],
-  "conditions": ["Оплата: 50% предоплата"],
-  "vatPercent": 20
+  "sourceAttributes": [...],
+  "targetAttributes": [...],
+  "rules": [{ "attributeCode": "...", "operator": "≥", "expectedValue": 100 }]
 }
+→ { "data": { "compliant": true, "violations": [] } }
 ```
 
-### PUT /kp/:id
-Обновить КП (только draft).
+## Производственные задачи (WorkTask)
 
-### PATCH /kp/:id/status
-Смена статуса.
+### GET /api/v1/work-tasks/by-order-item/:orderItemId
+Задачи по позиции заказа.
+
+### POST /api/v1/work-tasks
+Создать задачу.
+
+### PUT /api/v1/work-tasks/:id
+Обновить.
+
+### DELETE /api/v1/work-tasks/:id
+Удалить.
+
+## Материальные заявки (MaterialRequest)
+
+### GET /api/v1/material-requests/by-order/:orderId
+Заявки по заказу.
+
+### POST /api/v1/material-requests
+Создать заявку.
+
+### PUT /api/v1/material-requests/:id/approve
+Утвердить заявку.
 
 ```json
-// Request
-{ "status": "sent" }
-// Response 200
-{ "data": { ... "status": "sent", "versions": [...] } }
-//
-// 409 Conflict — статус уже изменён другим пользователем
+{ "approvedQuantity": 100, "approvedBy": "..." }
 ```
-
-### GET /kp/:id/calculate
-Пересчёт сумм (без сохранения).
-
-### DELETE /kp/:id
-Удалить. Роли: owner, admin.
-
----
 
 ## Настройки (Settings)
 
-### GET /settings
+### GET /api/v1/settings
 Все настройки.
 
-### GET /settings/map
-Плоский map `{ key: value }`.
-
-### GET /settings/group/:group
-По группе (`kp`, `passport`, `general`).
-
-### GET /settings/:key
-По ключу.
-
-### POST /settings
-Upsert. Роли: owner, admin.
-
-### PUT /settings/:key
-Upsert по ключу.
-
-### DELETE /settings/:key
-
----
-
-## Health
-
-### GET /health
+### PATCH /api/v1/settings/:key
+Обновить настройку.
 
 ```json
-{ "status": "ok", "timestamp": "...", "uptime": 123, "mongodb": "connected" }
+{ "value": "[\"шт\",\"м\",\"кг\"]" }
 ```
 
----
+## Уведомления (Notifications)
 
-## Ошибки
+### GET /api/v1/notifications/unread
+Непрочитанные уведомления.
+
+### PATCH /api/v1/notifications/:id/read
+Отметить прочитанным.
+
+### PATCH /api/v1/notifications/read-all
+Отметить все прочитанными.
+
+### GET /api/v1/notifications/sse?token=...
+Server-Sent Events для realtime-уведомлений.
+
+## Вложения (Attachments)
+
+### GET /api/v1/attachments/by-entity/:entityType/:entityId
+Вложения для сущности.
+
+## Health Check
+
+### GET /health
+Проверка работоспособности.
 
 ```json
-// 400 — Validation
-{ "error": { "message": "name and legalForm are required", "code": "VALIDATION_ERROR" } }
+→ { "status": "ok", "timestamp": "2026-05-21T10:00:00.000Z", "mongodb": "connected" }
+```
 
-// 401 — Unauthorized
-{ "error": { "message": "Missing or malformed token", "code": "UNAUTHORIZED" } }
+## Формат ответов
 
-// 403 — Forbidden
-{ "error": { "message": "Requires one of roles: owner, admin", "code": "FORBIDDEN" } }
+### Успех
+```json
+{ "data": T, "total?: number }
+```
 
-// 404 — Not Found
-{ "error": { "message": "Product with id 'xxx' not found", "code": "NOT_FOUND" } }
-
-// 409 — Conflict
-{ "error": { "message": "Status was changed by another user. Refresh and retry.", "code": "CONFLICT" } }
+### Ошибка
+```json
+{ "error": { "message": "...", "code": "..." } }
 ```

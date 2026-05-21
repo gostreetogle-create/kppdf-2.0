@@ -5,7 +5,7 @@ import type { IAttachment } from '../models/attachment.model';
 @Injectable({ providedIn: 'root' })
 export class AttachmentService {
   private readonly api = inject(ApiService);
-  private readonly endpoint = 'attachments';
+  private readonly endpoint = '/attachments';
 
   private readonly _list = signal<IAttachment[]>([]);
   readonly list = this._list.asReadonly();

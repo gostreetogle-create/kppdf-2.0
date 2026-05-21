@@ -5,7 +5,7 @@ import type { IWorkType } from '../models/work-type.model';
 @Injectable({ providedIn: 'root' })
 export class WorkTypeService {
   private readonly api = inject(ApiService);
-  private readonly endpoint = 'work-types';
+  private readonly endpoint = '/work-types';
   private readonly _list = signal<IWorkType[]>([]);
   readonly list = this._list.asReadonly();
 

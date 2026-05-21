@@ -21,6 +21,9 @@ import workTaskRoutes from './modules/work-task/work-task.routes';
 import materialRequestRoutes from './modules/material-request/material-request.routes';
 import attachmentRoutes from './modules/attachment/attachment.routes';
 import notificationRoutes from './modules/notification/notification.routes';
+import specRoutes from './modules/spec/spec.routes';
+import productionRoutes from './modules/production/production.routes';
+import complianceRoutes from './modules/compliance/compliance.routes';
 
 async function main(): Promise<void> {
   await connectDatabase();
@@ -52,6 +55,9 @@ async function main(): Promise<void> {
   app.use('/material-requests', materialRequestRoutes);
   app.use('/attachments', attachmentRoutes);
   app.use('/notifications', notificationRoutes);
+  app.use('/spec', specRoutes);
+  app.use('/production', productionRoutes);
+  app.use('/compliance', complianceRoutes);
 
   // Error handler (must be last)
   app.use(errorHandler);

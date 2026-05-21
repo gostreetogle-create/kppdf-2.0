@@ -1,30 +1,29 @@
-import type { IProduct, IProductComponent, ProductKind } from '../../../shared/types/product.interface';
+import type { IProduct, ProductKind } from '../../../shared/types/product.interface';
+import type { IProductCategory } from '../../../shared/types/category.types';
+import type { IAttributeValue, LifecycleStatus } from '../../../shared/types/attribute.types';
+import type { IComponentNode } from '../../../shared/types/bom.types';
 
-export type { ProductKind, IProductComponent };
+export type { ProductKind };
 export type { IProduct };
 
-/** Фронтенд-модель товара — расширяет IProduct полем id для удобства */
+/** Фронтенд-модель товара — PLM-ориентированная */
 export class Product implements IProduct {
-  _id!: string;
+  id!: string;
   name!: string;
-  code?: string;
-  description!: string;
-  price!: number;
-  unit!: string;
+  sku!: string;
+  categoryId!: string;
+  specId!: string;
   kind!: ProductKind;
-  images!: string[];
-  category?: string;
-  subcategory?: string;
-  specId?: string;
-  isActive!: boolean;
-  components?: IProductComponent[];
-  createdAt?: string;
-  updatedAt?: string;
+  status!: string; // 'active' | 'archived' | 'draft'
 
-  /** Алиас для _id — обратная совместимость */
-  get id(): string {
-    return this._id;
-  }
+  /** Виртуальные поля (подгружаются с бэкенда) */
+  category?: IProductCategory;
+  specification?: {
+    version: string;
+    status: LifecycleStatus;
+    attributeValues: IAttributeValue[];
+    bom?: IComponentNode;
+  };
 
   constructor(init: Partial<Product>) {
     Object.assign(this, init);
