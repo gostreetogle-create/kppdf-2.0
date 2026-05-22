@@ -18,7 +18,7 @@ export async function create(
   });
   if (existing) {
     throw new ConflictError(
-      `Status '${data.statusId}' already exists for entity '${data.entityType}'`,
+      `Статус '${data.statusId}' уже существует для сущности '${data.entityType}'`,
     );
   }
 
@@ -41,7 +41,7 @@ export async function update(
 ): Promise<IEntityStatusDocument> {
   const doc = await EntityStatusModel.findOne({ entityType, statusId });
   if (!doc) {
-    throw new NotFoundError('EntityStatus', `${entityType}:${statusId}`);
+    throw new NotFoundError('Статус сущности', `${entityType}:${statusId}`);
   }
 
   // Меняем isInitial
@@ -59,7 +59,7 @@ export async function update(
 export async function remove(entityType: string, statusId: string): Promise<void> {
   const doc = await EntityStatusModel.findOne({ entityType, statusId });
   if (!doc) {
-    throw new NotFoundError('EntityStatus', `${entityType}:${statusId}`);
+    throw new NotFoundError('Статус сущности', `${entityType}:${statusId}`);
   }
 
   // В будущем здесь будет проверка countDocuments по сущностям

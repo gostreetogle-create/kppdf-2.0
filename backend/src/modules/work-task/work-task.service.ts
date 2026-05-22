@@ -14,7 +14,7 @@ export async function create(data: Partial<IWorkTaskDocument>): Promise<IWorkTas
 
 export async function update(id: string, data: Partial<IWorkTaskDocument>): Promise<IWorkTaskDocument> {
   const doc = await WorkTaskModel.findById(id);
-  if (!doc) throw new Error('WorkTask not found');
+  if (!doc) throw new Error('Производственное задание не найдено');
   Object.assign(doc, data);
   return doc.save();
 }

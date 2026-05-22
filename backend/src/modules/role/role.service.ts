@@ -12,7 +12,7 @@ export async function getByName(name: string): Promise<IRoleDocument | null> {
 export async function create(data: Partial<IRoleDocument>): Promise<IRoleDocument> {
   const existing = await RoleModel.findOne({ name: data.name });
   if (existing) {
-    throw new ConflictError(`Role '${data.name}' already exists`);
+    throw new ConflictError(`Роль '${data.name}' уже существует`);
   }
   return RoleModel.create(data);
 }
@@ -20,12 +20,12 @@ export async function create(data: Partial<IRoleDocument>): Promise<IRoleDocumen
 export async function update(name: string, data: Partial<IRoleDocument>): Promise<IRoleDocument> {
   const doc = await RoleModel.findOne({ name });
   if (!doc) {
-    throw new NotFoundError('Role', name);
+    throw new NotFoundError('Роль', name);
   }
   if (doc.isSystem) {
     // Системные роли можно менять частично (label, permissions), но не name
     if (data.name && data.name !== name) {
-      throw new ValidationError('Cannot rename system role');
+      throw new ValidationError('Нельзя переименовать системную роль');
     }
   }
   Object.assign(doc, data);
@@ -35,10 +35,10 @@ export async function update(name: string, data: Partial<IRoleDocument>): Promis
 export async function remove(name: string): Promise<void> {
   const doc = await RoleModel.findOne({ name });
   if (!doc) {
-    throw new NotFoundError('Role', name);
+    throw new NotFoundError('Роль', name);
   }
   if (doc.isSystem) {
-    throw new ValidationError('Cannot delete system role');
+    throw new ValidationError('Нельзя удалить системную роль');
   }
   await doc.deleteOne();
 }

@@ -12,7 +12,7 @@ import { TableModule } from 'primeng/table';
 import { ImageUploaderComponent } from '../../../../shared/ui/image-uploader/image-uploader.component';
 import { Product, ProductKind } from '../../models/product.model';
 import { ProductService } from '../../data-access/product.service';
-import { SettingsService } from '../../../settings/data-access/settings.service';
+import { SettingsService, type CategoryDef } from '../../../settings/data-access/settings.service';
 
 /** @deprecated Will be replaced by BOMTreeEditor in PLM architecture */
 export interface IProductComponent {
@@ -31,8 +31,8 @@ export interface ProductFormValue {
   unit: string;
   kind: ProductKind;
   images: string[];
-  category: string;
-  subcategory: string;
+  categoryId: string;
+  subcategoryId: string;
   isActive: boolean;
   components: IProductComponent[];
 }
@@ -223,11 +223,13 @@ export interface ProductFormValue {
         <!-- Категория / Подкатегория -->
         <div class="product-form__row">
           <div class="product-form__field">
-            <label class="product-form__label" for="category">Категория</label>
+            <label class="product-form__label" for="categoryId">Категория</label>
             <p-select
-              id="category"
-              formControlName="category"
-              [options]="categoryOptions"
+              id="categoryId"
+              formControlName="categoryId"
+              [options]="categoryOptions()"
+              optionLabel="label"
+              optionValue="value"
               [showClear]="true"
               placeholder="Выберите категорию"
               appendTo="body"
@@ -235,11 +237,13 @@ export interface ProductFormValue {
             />
           </div>
           <div class="product-form__field">
-            <label class="product-form__label" for="subcategory">Подкатегория</label>
+            <label class="product-form__label" for="subcategoryId">Подкатегория</label>
             <p-select
-              id="subcategory"
-              formControlName="subcategory"
+              id="subcategoryId"
+              formControlName="subcategoryId"
               [options]="subcategoryOptions()"
+              optionLabel="label"
+              optionValue="value"
               [showClear]="true"
               placeholder="Выберите подкатегорию"
               appendTo="body"
@@ -307,36 +311,24 @@ export class ProductFormDialogComponent implements OnInit {
     { value: 'COMPLEX' as ProductKind, label: 'Комплекс' },
   ];
 
-  readonly categoryOptions = [
-    'Оборудование',
-    'Расходные материалы',
-    'Услуги',
-    'Программное обеспечение',
-    'Строительные материалы',
-    'Электроника',
-    'Мебель',
-    'Транспортные услуги',
-    'Консалтинг',
-    'Прочее',
-  ];
+  /** Категории загружаются из настроек */
+  readonly allCategories = this.settingsService.categories;
 
-  private readonly subcategoryMap: Record<string, string[]> = {
-    'Оборудование': ['Станки', 'Инструмент', 'Измерительное', 'Компрессоры', 'Насосы', 'Прочее'],
-    'Расходные материалы': ['Канцелярия', 'Хозтовары', 'Смазочные материалы', 'Фильтры', 'Прочее'],
-    'Услуги': ['Монтаж', 'Наладка', 'Ремонт', 'Обслуживание', 'Консультация', 'Прочее'],
-    'Программное обеспечение': ['Лицензии', 'Подписки', 'Разработка', 'Интеграция', 'Прочее'],
-    'Строительные материалы': ['Цемент', 'Песок', 'Металл', 'Древесина', 'Кровля', 'Прочее'],
-    'Электроника': ['Компьютеры', 'Комплектующие', 'Периферия', 'Сетевое', 'Прочее'],
-    'Мебель': ['Офисная', 'Для дома', 'Складская', 'Прочее'],
-    'Транспортные услуги': ['Доставка', 'Перевозка', 'Экспедирование', 'Прочее'],
-    'Консалтинг': ['Юридический', 'Бухгалтерский', 'IT', 'Управленческий', 'Прочее'],
-    'Прочее': ['Прочее'],
-  };
+  readonly categoryOptions = computed(() =>
+    this.allCategories().map((c) => ({ value: c.id, label: c.name })),
+  );
+
+  readonly selectedCategoryName = computed(() => {
+    const id = this.form.controls.categoryId.value;
+    if (!id) return '';
+    return this.allCategories().find((c) => c.id === id)?.name ?? '';
+  });
 
   readonly subcategoryOptions = computed(() => {
-    const category = this.form.controls.category.value;
-    if (!category) return [];
-    return this.subcategoryMap[category] ?? ['Прочее'];
+    const id = this.form.controls.categoryId.value;
+    if (!id) return [];
+    const found = this.allCategories().find((c) => c.id === id);
+    return (found?.subcategories ?? [{ id: 'prochee', name: 'Прочее' }]).map((s) => ({ value: s.id, label: s.name }));
   });
 
   readonly form = this.fb.nonNullable.group({
@@ -346,8 +338,8 @@ export class ProductFormDialogComponent implements OnInit {
     price: [0, Validators.required],
     unit: ['', Validators.required],
     kind: ['ITEM' as ProductKind, Validators.required],
-    category: [''],
-    subcategory: [''],
+    categoryId: [''],
+    subcategoryId: [''],
     isActive: [true],
   });
 
@@ -393,8 +385,8 @@ export class ProductFormDialogComponent implements OnInit {
         price: 0,
         unit: 'шт',
         kind: product.kind,
-        category: '',
-        subcategory: '',
+        categoryId: product.categoryId ?? '',
+        subcategoryId: '',
         isActive: product.status === 'active',
       });
       this.onKindChange();
@@ -402,11 +394,8 @@ export class ProductFormDialogComponent implements OnInit {
   }
 
   onCategoryChange(): void {
-    const sub = this.form.controls.subcategory;
-    const options = this.subcategoryOptions();
-    if (sub.value && !options.includes(sub.value)) {
-      sub.setValue('');
-    }
+    // Сброс подкатегории при смене категории
+    this.form.controls.subcategoryId.setValue('');
   }
 
   onKindChange(): void {
@@ -446,8 +435,8 @@ export class ProductFormDialogComponent implements OnInit {
       {
         productId: source.id,
         name: source.name,
-        unit: source.unit,
-        price: source.price,
+        unit: '',
+        price: 0,
         qty: this.newComponentQty(),
       },
     ]);

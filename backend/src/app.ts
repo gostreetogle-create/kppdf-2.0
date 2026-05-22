@@ -24,6 +24,8 @@ import notificationRoutes from './modules/notification/notification.routes';
 import specRoutes from './modules/spec/spec.routes';
 import productionRoutes from './modules/production/production.routes';
 import complianceRoutes from './modules/compliance/compliance.routes';
+import documentTemplateRoutes from './modules/document-template/document-template.routes';
+import documentRoutes from './modules/document/document.routes';
 
 async function main(): Promise<void> {
   await connectDatabase();
@@ -58,6 +60,8 @@ async function main(): Promise<void> {
   app.use('/spec', specRoutes);
   app.use('/production', productionRoutes);
   app.use('/compliance', complianceRoutes);
+  app.use('/document-templates', documentTemplateRoutes);
+  app.use('/documents', documentRoutes);
 
   // Error handler (must be last)
   app.use(errorHandler);

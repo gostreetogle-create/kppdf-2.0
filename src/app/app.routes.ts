@@ -9,6 +9,7 @@ import { KpListPageComponent } from './pages/kp-list/kp-list-page.component';
 import { SettingsPageComponent } from './pages/settings/settings-page.component';
 import { OrderListPageComponent } from './pages/orders/order-list-page.component';
 import { OrderViewPageComponent } from './pages/orders/order-view-page.component';
+import { DocumentEditorPageComponent } from './pages/document-editor/document-editor-page.component';
 
 export const routes: Routes = [
   {
@@ -52,6 +53,14 @@ export const routes: Routes = [
       {
         path: 'orders/:id',
         component: OrderViewPageComponent,
+      },
+      {
+        path: 'editor',
+        component: DocumentEditorPageComponent,
+      },
+      {
+        path: 'editor/:id',
+        component: DocumentEditorPageComponent,
       },
     ],
   },

@@ -78,20 +78,77 @@ async function seed(): Promise<void> {
     console.log('[Seed] Roles created');
   }
 
-  // 1.6. EntityStatuses for Order
+  // 1.6. EntityStatuses — Статусы для всех типов сущностей
   const { EntityStatusModel } = await import('../modules/entity-status/entity-status.model');
-  const orderStatusCount = await EntityStatusModel.countDocuments({ entityType: 'order' });
-  if (orderStatusCount === 0) {
+
+  // Статусы заказов
+  if ((await EntityStatusModel.countDocuments({ entityType: 'ORDER' })) === 0) {
     await EntityStatusModel.insertMany([
-      { entityType: 'order', name: 'draft',       label: 'Черновик',      color: '#9ca3af', isInitial: true,  sortOrder: 10, allowedTransitions: ['sent', 'cancelled'] },
-      { entityType: 'order', name: 'sent',        label: 'Отправлен',     color: '#60a5fa', isInitial: false, sortOrder: 20, allowedTransitions: ['confirmed', 'cancelled'] },
-      { entityType: 'order', name: 'confirmed',   label: 'Подтверждён',   color: '#34d399', isInitial: false, sortOrder: 30, allowedTransitions: ['in_production', 'cancelled'] },
-      { entityType: 'order', name: 'in_production', label: 'В производстве', color: '#fbbf24', isInitial: false, sortOrder: 40, allowedTransitions: ['partially_shipped', 'completed'] },
-      { entityType: 'order', name: 'partially_shipped', label: 'Частично отгружен', color: '#fb923c', isInitial: false, sortOrder: 50, allowedTransitions: ['completed'] },
-      { entityType: 'order', name: 'completed', label: 'Выполнен',       color: '#34d399', isInitial: false, sortOrder: 60, allowedTransitions: [] },
-      { entityType: 'order', name: 'cancelled',  label: 'Отменён',       color: '#ef4444', isInitial: false, sortOrder: 70, allowedTransitions: [] },
+      { entityType: 'ORDER', statusId: 'draft',             label: 'Черновик',              color: '#9ca3af', isInitial: true,  isFinal: false, sortOrder: 10 },
+      { entityType: 'ORDER', statusId: 'sent',              label: 'Отправлен',             color: '#60a5fa', isInitial: false, isFinal: false, sortOrder: 20 },
+      { entityType: 'ORDER', statusId: 'confirmed',         label: 'Подтверждён',           color: '#34d399', isInitial: false, isFinal: false, sortOrder: 30 },
+      { entityType: 'ORDER', statusId: 'in_production',     label: 'В производстве',        color: '#fbbf24', isInitial: false, isFinal: false, sortOrder: 40 },
+      { entityType: 'ORDER', statusId: 'completed',         label: 'Выполнен',              color: '#22c55e', isInitial: false, isFinal: true,  sortOrder: 50 },
+      { entityType: 'ORDER', statusId: 'cancelled',         label: 'Отменён',               color: '#ef4444', isInitial: false, isFinal: true,  sortOrder: 60 },
     ]);
     console.log('[Seed] Order statuses created');
+  }
+
+  // Статусы КП
+  if ((await EntityStatusModel.countDocuments({ entityType: 'KP' })) === 0) {
+    await EntityStatusModel.insertMany([
+      { entityType: 'KP', statusId: 'draft',       label: 'Черновик',      color: '#9ca3af', isInitial: true,  isFinal: false, sortOrder: 10 },
+      { entityType: 'KP', statusId: 'sent',        label: 'Отправлено',    color: '#60a5fa', isInitial: false, isFinal: false, sortOrder: 20 },
+      { entityType: 'KP', statusId: 'approved',    label: 'Согласовано',   color: '#34d399', isInitial: false, isFinal: false, sortOrder: 30 },
+      { entityType: 'KP', statusId: 'rejected',    label: 'Отклонено',     color: '#ef4444', isInitial: false, isFinal: true,  sortOrder: 40 },
+      { entityType: 'KP', statusId: 'converted',   label: 'Преобразован в заказ', color: '#8b5cf6', isInitial: false, isFinal: true, sortOrder: 50 },
+    ]);
+    console.log('[Seed] KP statuses created');
+  }
+
+  // Статусы позиций заказа
+  if ((await EntityStatusModel.countDocuments({ entityType: 'ORDER_ITEM' })) === 0) {
+    await EntityStatusModel.insertMany([
+      { entityType: 'ORDER_ITEM', statusId: 'pending',      label: 'Ожидает',          color: '#9ca3af', isInitial: true,  isFinal: false, sortOrder: 10 },
+      { entityType: 'ORDER_ITEM', statusId: 'in_progress',  label: 'В работе',         color: '#fbbf24', isInitial: false, isFinal: false, sortOrder: 20 },
+      { entityType: 'ORDER_ITEM', statusId: 'completed',    label: 'Готово',           color: '#22c55e', isInitial: false, isFinal: true,  sortOrder: 30 },
+      { entityType: 'ORDER_ITEM', statusId: 'cancelled',    label: 'Отменена',         color: '#ef4444', isInitial: false, isFinal: true,  sortOrder: 40 },
+    ]);
+    console.log('[Seed] OrderItem statuses created');
+  }
+
+  // Статусы производственных заданий
+  if ((await EntityStatusModel.countDocuments({ entityType: 'WORK_TASK' })) === 0) {
+    await EntityStatusModel.insertMany([
+      { entityType: 'WORK_TASK', statusId: 'new',           label: 'Новое',            color: '#9ca3af', isInitial: true,  isFinal: false, sortOrder: 10 },
+      { entityType: 'WORK_TASK', statusId: 'assigned',      label: 'Назначено',        color: '#60a5fa', isInitial: false, isFinal: false, sortOrder: 20 },
+      { entityType: 'WORK_TASK', statusId: 'in_progress',   label: 'В работе',         color: '#fbbf24', isInitial: false, isFinal: false, sortOrder: 30 },
+      { entityType: 'WORK_TASK', statusId: 'completed',     label: 'Выполнено',        color: '#22c55e', isInitial: false, isFinal: true,  sortOrder: 40 },
+      { entityType: 'WORK_TASK', statusId: 'cancelled',     label: 'Отменено',         color: '#ef4444', isInitial: false, isFinal: true,  sortOrder: 50 },
+    ]);
+    console.log('[Seed] WorkTask statuses created');
+  }
+
+  // Статусы заявок на материалы
+  if ((await EntityStatusModel.countDocuments({ entityType: 'MATERIAL_REQUEST' })) === 0) {
+    await EntityStatusModel.insertMany([
+      { entityType: 'MATERIAL_REQUEST', statusId: 'new',        label: 'Новая',           color: '#9ca3af', isInitial: true,  isFinal: false, sortOrder: 10 },
+      { entityType: 'MATERIAL_REQUEST', statusId: 'approved',   label: 'Согласована',     color: '#34d399', isInitial: false, isFinal: false, sortOrder: 20 },
+      { entityType: 'MATERIAL_REQUEST', statusId: 'ordered',    label: 'Заказано',        color: '#60a5fa', isInitial: false, isFinal: false, sortOrder: 30 },
+      { entityType: 'MATERIAL_REQUEST', statusId: 'received',   label: 'Получено',        color: '#22c55e', isInitial: false, isFinal: true,  sortOrder: 40 },
+      { entityType: 'MATERIAL_REQUEST', statusId: 'cancelled',  label: 'Отменена',        color: '#ef4444', isInitial: false, isFinal: true,  sortOrder: 50 },
+    ]);
+    console.log('[Seed] MaterialRequest statuses created');
+  }
+
+  // Статусы товаров
+  if ((await EntityStatusModel.countDocuments({ entityType: 'PRODUCT' })) === 0) {
+    await EntityStatusModel.insertMany([
+      { entityType: 'PRODUCT', statusId: 'active',     label: 'Активен',         color: '#22c55e', isInitial: true,  isFinal: false, sortOrder: 10 },
+      { entityType: 'PRODUCT', statusId: 'archived',   label: 'В архиве',        color: '#9ca3af', isInitial: false, isFinal: false, sortOrder: 20 },
+      { entityType: 'PRODUCT', statusId: 'discontinued', label: 'Снят с производства', color: '#ef4444', isInitial: false, isFinal: true, sortOrder: 30 },
+    ]);
+    console.log('[Seed] Product statuses created');
   }
 
   // 1.75. WorkTypes
@@ -182,6 +239,7 @@ async function seed(): Promise<void> {
     { key: 'passport_warranty_text', value: 'Гарантия 12 месяцев с даты отгрузки', label: 'Текст гарантии (паспорт)', group: 'passport' },
     { key: 'passport_storage_text', value: 'Хранить в сухом месте при t от +5 до +40°C', label: 'Текст условий хранения (паспорт)', group: 'passport' },
     { key: 'product_units', value: '["шт","м","кг","л","усл.","компл","м²","м³","уп.","пач.","рул.","лист"]', label: 'Единицы измерения товаров', group: 'product' },
+    { key: 'product_categories', value: '[{"id":"oborudovanie","name":"Оборудование","subcategories":[{"id":"stanki","name":"Станки"},{"id":"instrument","name":"Инструмент"},{"id":"izmeritelnoe","name":"Измерительное"},{"id":"kompressory","name":"Компрессоры"},{"id":"nasosy","name":"Насосы"},{"id":"prochee-oborud","name":"Прочее"}]},{"id":"raskhodnye-materialy","name":"Расходные материалы","subcategories":[{"id":"kantselyariya","name":"Канцелярия"},{"id":"khoztovary","name":"Хозтовары"},{"id":"smazochnye","name":"Смазочные материалы"},{"id":"filtry","name":"Фильтры"},{"id":"prochee-raskh","name":"Прочее"}]},{"id":"uslugi","name":"Услуги","subcategories":[{"id":"montazh","name":"Монтаж"},{"id":"naladka","name":"Наладка"},{"id":"remont","name":"Ремонт"},{"id":"obsluzhivanie","name":"Обслуживание"},{"id":"konsultatsiya","name":"Консультация"},{"id":"prochee-usl","name":"Прочее"}]},{"id":"programmnoe-obespechenie","name":"Программное обеспечение","subcategories":[{"id":"litsenzii","name":"Лицензии"},{"id":"podpiski","name":"Подписки"},{"id":"razrabotka","name":"Разработка"},{"id":"integratsiya","name":"Интеграция"},{"id":"prochee-po","name":"Прочее"}]},{"id":"prochee","name":"Прочее","subcategories":[{"id":"prochee-proch","name":"Прочее"}]}]', label: 'Категории товаров', group: 'product' },
   ];
   for (const s of defaultSettings) {
     await SettingModel.updateOne({ key: s.key }, { $set: s }, { upsert: true });

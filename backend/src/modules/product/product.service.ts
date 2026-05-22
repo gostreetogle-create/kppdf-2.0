@@ -28,13 +28,13 @@ export async function getAll(filters?: {
 
 export async function getById(id: string): Promise<IProduct> {
   const doc = await ProductModel.findById(id);
-  if (!doc) throw new NotFoundError('Product', id);
+  if (!doc) throw new NotFoundError('Товар', id);
   return toJSON(doc);
 }
 
 export async function create(data: Omit<IProduct, 'id' | 'category' | 'specification'>): Promise<IProduct> {
   if (!data.name || !data.sku || !data.categoryId || !data.kind) {
-    throw new ValidationError('name, sku, categoryId, kind are required');
+    throw new ValidationError('name, sku, categoryId, kind обязательны для заполнения');
   }
   const doc = await ProductModel.create(data);
   return toJSON(doc);
@@ -42,11 +42,11 @@ export async function create(data: Omit<IProduct, 'id' | 'category' | 'specifica
 
 export async function update(id: string, data: Partial<Omit<IProduct, 'id' | 'category' | 'specification'>>): Promise<IProduct> {
   const doc = await ProductModel.findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true });
-  if (!doc) throw new NotFoundError('Product', id);
+  if (!doc) throw new NotFoundError('Товар', id);
   return toJSON(doc);
 }
 
 export async function remove(id: string): Promise<void> {
   const doc = await ProductModel.findByIdAndDelete(id);
-  if (!doc) throw new NotFoundError('Product', id);
+  if (!doc) throw new NotFoundError('Товар', id);
 }

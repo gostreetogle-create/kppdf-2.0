@@ -1,0 +1,59 @@
+<p-toolbar>
+  <ng-template #start>
+    <p-button
+      icon="pi pi-arrow-left"
+      [text]="true"
+      (click)="back.emit()"
+      pTooltip="Назад"
+    />
+    <span class="editor-toolbar__title">{{ docTitle() }}</span>
+    @if (status() === 'draft') {
+      <span class="editor-toolbar__badge editor-toolbar__badge--draft">Черновик</span>
+    } @else {
+      <span class="editor-toolbar__badge editor-toolbar__badge--final">Финальный</span>
+    }
+  </ng-template>
+
+  <ng-template #end>
+    <div class="editor-toolbar__nav">
+      <button
+        pButton
+        type="button"
+        icon="pi pi-chevron-left"
+        class="p-button-rounded p-button-text"
+        [disabled]="currentPage() <= 1"
+        (click)="pageChange.emit(currentPage() - 1)"
+      ></button>
+      <span class="editor-toolbar__page-info">{{ currentPage() }} / {{ totalPages() }}</span>
+      <button
+        pButton
+        type="button"
+        icon="pi pi-chevron-right"
+        class="p-button-rounded p-button-text"
+        [disabled]="currentPage() >= totalPages()"
+        (click)="pageChange.emit(currentPage() + 1)"
+      ></button>
+    </div>
+
+    @if (status() === 'draft') {
+      <button
+        pButton
+        type="button"
+        label="Сохранить"
+        icon="pi pi-save"
+        class="p-button-outlined"
+        [disabled]="!canSave()"
+        (click)="save.emit()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        label="Зафиксировать"
+        icon="pi pi-lock"
+        class="p-button-success"
+        (click)="finalize.emit()"
+        style="margin-left: 8px"
+      ></button>
+    }
+  </ng-template>
+</p-toolbar>

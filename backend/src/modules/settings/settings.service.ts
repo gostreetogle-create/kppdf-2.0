@@ -26,7 +26,7 @@ export async function getByGroup(group: string): Promise<ISetting[]> {
 
 export async function getByKey(key: string): Promise<ISetting> {
   const doc = await SettingModel.findOne({ key });
-  if (!doc) throw new NotFoundError('Setting', key);
+  if (!doc) throw new NotFoundError('Настройка', key);
   return toJSON(doc);
 }
 
@@ -40,7 +40,7 @@ export async function getMap(): Promise<ISettingsMap> {
 }
 
 export async function upsert(data: { key: string; value: unknown; label?: string; description?: string; group?: string }): Promise<ISetting> {
-  if (!data.key) throw new ValidationError('key is required');
+  if (!data.key) throw new ValidationError('key обязателен для заполнения');
 
   const doc = await SettingModel.findOneAndUpdate(
     { key: data.key },
@@ -60,7 +60,7 @@ export async function upsert(data: { key: string; value: unknown; label?: string
 
 export async function remove(key: string): Promise<void> {
   const doc = await SettingModel.findOneAndDelete({ key });
-  if (!doc) throw new NotFoundError('Setting', key);
+  if (!doc) throw new NotFoundError('Настройка', key);
 }
 
 /** Начальная инициализация настроек по умолчанию */

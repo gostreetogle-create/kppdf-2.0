@@ -14,7 +14,7 @@ export async function create(data: Partial<IOrderItemDocument>): Promise<IOrderI
 
 export async function update(id: string, data: Partial<IOrderItemDocument>): Promise<IOrderItemDocument> {
   const doc = await OrderItemModel.findById(id);
-  if (!doc) throw new NotFoundError('OrderItem', id);
+  if (!doc) throw new NotFoundError('Позиция заказа', id);
   Object.assign(doc, data);
   if (data.quantity !== undefined || data.snapshot?.price !== undefined) {
     const price = data.snapshot?.price ?? doc.snapshot.price;
@@ -28,7 +28,7 @@ export async function update(id: string, data: Partial<IOrderItemDocument>): Pro
 
 export async function remove(id: string): Promise<void> {
   const doc = await OrderItemModel.findById(id);
-  if (!doc) throw new NotFoundError('OrderItem', id);
+  if (!doc) throw new NotFoundError('Позиция заказа', id);
   const orderId = doc.orderId;
   await doc.deleteOne();
   await recalcOrderTotal(orderId);

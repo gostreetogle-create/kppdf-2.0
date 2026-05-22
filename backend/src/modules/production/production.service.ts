@@ -5,7 +5,7 @@ import { MaterialRequestModel } from '../material-request/material-request.model
 import { getInitial } from '../entity-status/entity-status.service';
 import type { IComponentNode } from '@shared/types/bom.types';
 import type { IMaterialItem } from '@shared/types/material.types';
-import { DimensionParser, type IParsedDimension } from '../../../shared/logic/dimension-parser';
+import { DimensionParser, type IParsedDimension } from '../../../../shared/logic/dimension-parser';
 
 export class ProductionService {
   /** Получить план по заказу */
@@ -16,7 +16,7 @@ export class ProductionService {
   /** Создать/пересчитать план на основе BOM */
   async calculatePlan(orderId: string, specId: string): Promise<string> {
     const spec = await ProductSpecModel.findById(specId).lean();
-    if (!spec || !spec.bom) throw new Error('Spec or BOM not found');
+    if (!spec || !spec.bom) throw new Error('Спецификация или BOM не найдены');
 
     const bom = spec.bom as unknown as IComponentNode;
     const materials = this.flattenBomMaterials(bom);

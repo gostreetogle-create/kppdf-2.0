@@ -1,0 +1,83 @@
+@if (visible()) {
+  @switch (overlay().type) {
+    @case ('text') {
+      <div
+        class="overlay-renderer overlay-renderer--text"
+        [style.left.%]="overlay().x / 210 * 100"
+        [style.top.%]="overlay().y / 297 * 100"
+        [style.width.%]="overlay().width / 210 * 100"
+        [style.fontSize.px]="overlay().style.fontSize * 96 / 72"
+        [style.fontFamily]="overlay().style.fontFamily"
+        [style.fontWeight]="overlay().style.bold ? 'bold' : 'normal'"
+        [style.textAlign]="overlay().style.textAlign"
+        [style.color]="overlay().style.color"
+      >
+        {{ value() }}
+      </div>
+    }
+    @case ('table') {
+      <div
+        class="overlay-renderer overlay-renderer--table"
+        [style.left.%]="overlay().x / 210 * 100"
+        [style.top.%]="overlay().y / 297 * 100"
+        [style.width.%]="overlay().width / 210 * 100"
+      >
+        <table class="overlay-renderer__table">
+          @if (overlay().tableColumns?.length) {
+            <thead>
+              <tr>
+                @for (col of overlay().tableColumns; track col.field) {
+                  <th
+                    [style.width.%]="col.width / overlay().width * 100"
+                    [style.textAlign]="col.align"
+                    [style.fontSize.px]="overlay().style.fontSize * 96 / 72"
+                    [style.fontFamily]="overlay().style.fontFamily"
+                  >
+                    {{ col.header }}
+                  </th>
+                }
+              </tr>
+            </thead>
+          }
+          <tbody>
+            @for (row of tableRows(); track $index) {
+              <tr>
+                @for (col of overlay().tableColumns ?? []; track col.field) {
+                  <td
+                    [style.textAlign]="col.align"
+                    [style.fontSize.px]="overlay().style.fontSize * 96 / 72"
+                  >
+                    {{ resolveRowValue(row, col.field) }}
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    @case ('image') {
+      <img
+        class="overlay-renderer overlay-renderer--image"
+        [src]="value()"
+        [style.left.%]="overlay().x / 210 * 100"
+        [style.top.%]="overlay().y / 297 * 100"
+        [style.width.%]="overlay().width / 210 * 100"
+        [style.height.%]="overlay().height / 297 * 100"
+        alt=""
+      />
+    }
+    @case ('qrcode') {
+      <div
+        class="overlay-renderer overlay-renderer--qrcode"
+        [style.left.%]="overlay().x / 210 * 100"
+        [style.top.%]="overlay().y / 297 * 100"
+        [style.width.%]="overlay().width / 210 * 100"
+        [style.height.%]="overlay().height / 297 * 100"
+      >
+        QR: {{ overlay().qrcodeData ?? value() }}
+      </div>
+    }
+  }
+}
+

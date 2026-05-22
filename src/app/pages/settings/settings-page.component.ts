@@ -8,6 +8,7 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
@@ -15,8 +16,9 @@ import { TabsModule } from 'primeng/tabs';
 import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { SettingsService } from '../../entities/settings/data-access/settings.service';
+import { SettingsService, slugify, type CategoryDef, type SubcategoryDef } from '../../entities/settings/data-access/settings.service';
 import { EntityStatusService } from '../../entities/entity-status/data-access/entity-status.service';
 import { ENTITY_STATUS_TYPES } from '../../entities/entity-status/models/entity-status.model';
 import type { IEntityStatus } from '../../shared/types/entity-status.interface';
@@ -31,6 +33,7 @@ import type { IEntityStatus } from '../../shared/types/entity-status.interface';
     CardModule,
     InputTextModule,
     InputNumberModule,
+    TextareaModule,
     SelectModule,
     ColorPickerModule,
     ToggleSwitchModule,
@@ -38,6 +41,7 @@ import type { IEntityStatus } from '../../shared/types/entity-status.interface';
     DialogModule,
     ToastModule,
     ConfirmDialogModule,
+    TooltipModule,
   ],
   providers: [MessageService, ConfirmationService],
   template: `
@@ -51,6 +55,7 @@ import type { IEntityStatus } from '../../shared/types/entity-status.interface';
         <p-tablist>
           <p-tab value="general">Общие</p-tab>
           <p-tab value="statuses">Статусы</p-tab>
+          <p-tab value="categories">Категории</p-tab>
         </p-tablist>
 
         <!-- ========== ВКЛАДКА: ОБЩИЕ НАСТРОЙКИ ========== -->
@@ -171,6 +176,45 @@ import type { IEntityStatus } from '../../shared/types/entity-status.interface';
             </p-table>
           }
         </p-tabpanel>
+
+        <!-- ========== ВКЛАДКА: КАТЕГОРИИ ТОВАРОВ ========== -->
+        <p-tabpanel value="categories">
+          <div class="settings-page__cat-header">
+            <p-button label="Добавить категорию" icon="pi pi-plus" (click)="showAddCategoryDialog()" />
+          </div>
+
+          @if (categories().length === 0) {
+            <p class="settings-page__hint">Нет категорий. Нажмите «Добавить категорию».</p>
+          } @else {
+            <p-table [value]="categories()" dataKey="name" styleClass="p-datatable-sm">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Категория</th>
+                  <th>Подкатегории</th>
+                  <th style="width:100px">Действия</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-cat>
+                <tr>
+                  <td><strong>{{ cat.name }}</strong></td>
+                  <td>
+                    @if (cat.subcategories.length === 0) {
+                      <span class="settings-page__hint">нет подкатегорий</span>
+                    } @else {
+                      <span class="settings-page__subcat-list">{{ cat.subcategories.map(s => s.name).join(', ') }}</span>
+                    }
+                  </td>
+                  <td>
+                    <div class="settings-page__actions">
+                      <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" (click)="editCategory(cat)" />
+                      <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" (click)="deleteCategory(cat.name)" />
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          }
+        </p-tabpanel>
       </p-tabs>
     </section>
 
@@ -220,7 +264,12 @@ import type { IEntityStatus } from '../../shared/types/entity-status.interface';
                 (ngModelChange)="updateForm('isInitial', $event)"
                 inputId="dlg-isInitial"
               />
-              <label class="settings-page__switch-label" for="dlg-isInitial">Начальный</label>
+              <label class="settings-page__switch-label" for="dlg-isInitial">
+                Начальный
+                <i class="pi pi-question-circle settings-page__hint-icon"
+                   [pTooltip]="'Начальный статус присваивается автоматически всем новым документам данного типа. Например, для заказа — «Черновик». Можно выбрать только один начальный статус на тип.'"
+                   tooltipPosition="top"></i>
+              </label>
             </div>
             <div class="settings-page__switch-group">
               <p-toggleSwitch
@@ -228,7 +277,12 @@ import type { IEntityStatus } from '../../shared/types/entity-status.interface';
                 (ngModelChange)="updateForm('isFinal', $event)"
                 inputId="dlg-isFinal"
               />
-              <label class="settings-page__switch-label" for="dlg-isFinal">Конечный</label>
+              <label class="settings-page__switch-label" for="dlg-isFinal">
+                Конечный
+                <i class="pi pi-question-circle settings-page__hint-icon"
+                   [pTooltip]="'Конечный статус означает, что документ завершён и дальнейшие изменения невозможны. Например, для заказа — «Выполнен» или «Отменён». Можно иметь несколько конечных статусов.'"
+                   tooltipPosition="top"></i>
+              </label>
             </div>
           </div>
         </div>
@@ -240,6 +294,32 @@ import type { IEntityStatus } from '../../shared/types/entity-status.interface';
           [disabled]="!formValid()"
           (click)="saveStatusFromDialog()"
         />
+      </ng-template>
+    </p-dialog>
+
+    <!-- Диалог добавления/редактирования категории -->
+    <p-dialog
+      [header]="editingCategoryName() ? 'Редактировать категорию' : 'Новая категория'"
+      [modal]="true"
+      [visible]="catDialogVisible()"
+      [style]="{ width: '500px' }"
+      (onHide)="closeCatDialog()"
+    >
+      <div class="settings-page__dialog-form">
+        <div class="settings-page__field">
+          <span class="settings-page__label">Название категории *</span>
+          <input pInputText [(ngModel)]="catFormName" class="settings-page__input"
+            placeholder="Например: Оборудование" />
+        </div>
+        <div class="settings-page__field">
+          <span class="settings-page__label">Подкатегории <small>(каждая с новой строки)</small></span>
+          <textarea pTextarea [(ngModel)]="catFormSubs" rows="6" class="settings-page__input"
+            placeholder="Станки&#10;Инструмент&#10;Измерительное&#10;Прочее"></textarea>
+        </div>
+      </div>
+      <ng-template pTemplate="footer">
+        <p-button label="Отмена" severity="secondary" (click)="closeCatDialog()" />
+        <p-button label="Сохранить" [disabled]="!catFormName().trim()" (click)="saveCategory()" />
       </ng-template>
     </p-dialog>
   `,
@@ -265,7 +345,11 @@ import type { IEntityStatus } from '../../shared/types/entity-status.interface';
     .settings-page__label { font-weight: 600; font-size: 0.875rem; }
     .settings-page__row { display: flex; gap: 1.5rem; }
     .settings-page__switch-group { display: flex; align-items: center; gap: 0.5rem; }
-    .settings-page__switch-label { font-size: 0.875rem; cursor: pointer; }
+    .settings-page__switch-label { font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; }
+    .settings-page__hint-icon { color: #94a3b8; cursor: help; font-size: 0.875rem; }
+    .settings-page__hint-icon:hover { color: #64748b; }
+    .settings-page__cat-header { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1rem; }
+    .settings-page__subcat-list { font-size: 0.875rem; color: #64748b; }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -276,6 +360,92 @@ export class SettingsPageComponent {
   private readonly confirm = inject(ConfirmationService);
 
   protected readonly ENTITY_TYPES = ENTITY_STATUS_TYPES;
+
+  // ---- Категории товаров ----
+  readonly categories = this.settingsSvc.categories;
+
+  readonly catDialogVisible = signal(false);
+  readonly editingCategoryName = signal<string | null>(null);
+  readonly catFormName = signal('');
+  readonly catFormSubs = signal('');
+
+  showAddCategoryDialog(): void {
+    this.editingCategoryName.set(null);
+    this.catFormName.set('');
+    this.catFormSubs.set('');
+    this.catDialogVisible.set(true);
+  }
+
+  editCategory(cat: CategoryDef): void {
+    this.editingCategoryName.set(cat.name);
+    this.catFormName.set(cat.name);
+    this.catFormSubs.set(cat.subcategories.map((s) => s.name).join('\n'));
+    this.catDialogVisible.set(true);
+  }
+
+  saveCategory(): void {
+    const name = this.catFormName().trim();
+    if (!name) return;
+
+    const rawSubs = this.catFormSubs()
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const current = [...this.categories()];
+    const oldName = this.editingCategoryName();
+    const existingIdx = current.findIndex((c) => c.name === oldName);
+
+    // Преобразуем строки в SubcategoryDef с сохранением ID
+    const oldSubs = existingIdx >= 0 ? current[existingIdx].subcategories : [];
+    const subcategories: SubcategoryDef[] = rawSubs.map((name) => {
+      const existing = oldSubs.find((s) => s.name === name);
+      return existing ?? { id: slugify(name) + '-' + Date.now().toString(36), name };
+    });
+
+    if (existingIdx >= 0) {
+      // Редактирование — ID категории и существующих подкатегорий сохраняются
+      current[existingIdx] = { ...current[existingIdx], name, subcategories };
+    } else {
+      // Создание — генерируем новый ID для категории
+      const id = slugify(name) + '-' + Date.now().toString(36);
+      current.push({ id, name, subcategories });
+    }
+
+    this.settingsSvc.update('product_categories', JSON.stringify(current)).pipe(
+      catchError((err: Error) => {
+        this.msg.add({ severity: 'error', summary: 'Ошибка', detail: err.message });
+        return of(undefined);
+      }),
+    ).subscribe(() => {
+      this.msg.add({ severity: 'success', summary: 'Сохранено', detail: `Категория «${name}» сохранена` });
+      this.closeCatDialog();
+    });
+  }
+
+  deleteCategory(name: string): void {
+    this.confirm.confirm({
+      message: `Удалить категорию «${name}»?`,
+      header: 'Подтверждение',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        const updated = this.categories().filter((c) => c.name !== name);
+        this.settingsSvc.update('product_categories', JSON.stringify(updated)).pipe(
+          catchError((err: Error) => {
+            this.msg.add({ severity: 'error', summary: 'Ошибка', detail: err.message });
+            return of(undefined);
+          }),
+        ).subscribe(() => {
+          this.msg.add({ severity: 'success', summary: 'Удалено', detail: `Категория «${name}» удалена` });
+        });
+      },
+    });
+  }
+
+  closeCatDialog(): void {
+    this.catDialogVisible.set(false);
+    this.editingCategoryName.set(null);
+  }
 
   // ---- Общие настройки ----
   private readonly rs = this.settingsSvc.items;

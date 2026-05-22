@@ -10,7 +10,7 @@ export async function getAllCategories(_req: Request, res: Response): Promise<vo
 /** GET /categories/:id */
 export async function getCategoryById(req: Request, res: Response): Promise<void> {
   const data = await specService.getCategory(req.params.id as string);
-  if (!data) { res.status(404).json({ error: { message: 'Category not found' } }); return; }
+  if (!data) { res.status(404).json({ error: { message: 'Категория не найдена' } }); return; }
   res.json({ data });
 }
 
@@ -42,7 +42,7 @@ export async function createSpec(req: Request, res: Response): Promise<void> {
 /** GET /specs/:id */
 export async function getSpec(req: Request, res: Response): Promise<void> {
   const data = await specService.getSpec(req.params.id as string);
-  if (!data) { res.status(404).json({ error: { message: 'Spec not found' } }); return; }
+  if (!data) { res.status(404).json({ error: { message: 'Спецификация не найдена' } }); return; }
   res.json({ data });
 }
 

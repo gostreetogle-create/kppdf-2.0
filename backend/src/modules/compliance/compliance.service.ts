@@ -29,7 +29,7 @@ export class ComplianceService {
    */
   async checkCompliance(dealId: string, specId: string): Promise<string> {
     const spec = await ProductSpecModel.findById(specId).lean();
-    if (!spec) throw new Error('Spec not found');
+    if (!spec) throw new Error('Спецификация не найдена');
 
     const attrValues = (spec.attributeValues ?? []) as unknown as IAttributeValue[];
     const results: IComplianceCheck['results'] = [];
@@ -221,7 +221,7 @@ export class ComplianceService {
     requirements: IRequirement[],
   ): Promise<IComplianceCheck['results']> {
     const spec = await ProductSpecModel.findById(specId).lean();
-    if (!spec) throw new Error('Spec not found');
+    if (!spec) throw new Error('Спецификация не найдена');
 
     const attrValues = (spec.attributeValues ?? []) as unknown as IAttributeValue[];
     const results: IComplianceCheck['results'] = [];

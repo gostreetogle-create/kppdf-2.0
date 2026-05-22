@@ -14,14 +14,14 @@ export async function create(data: Partial<IMaterialRequestDocument>): Promise<I
 
 export async function update(id: string, data: Partial<IMaterialRequestDocument>): Promise<IMaterialRequestDocument> {
   const doc = await MaterialRequestModel.findById(id);
-  if (!doc) throw new Error('MaterialRequest not found');
+  if (!doc) throw new Error('Заявка на материал не найдена');
   Object.assign(doc, data);
   return doc.save();
 }
 
 export async function approve(id: string, approvedQuantity: number, approvedBy: string): Promise<IMaterialRequestDocument> {
   const doc = await MaterialRequestModel.findById(id);
-  if (!doc) throw new Error('MaterialRequest not found');
+  if (!doc) throw new Error('Заявка на материал не найдена');
   doc.approvedQuantity = approvedQuantity;
   doc.approvedBy = approvedBy;
   doc.statusId = 'approved';

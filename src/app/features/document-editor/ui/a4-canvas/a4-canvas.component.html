@@ -1,0 +1,22 @@
+<div class="a4-canvas__container">
+  <div class="a4-canvas__page">
+    <!-- Фоновое изображение A4 -->
+    @if (backgroundImage(); as bg) {
+      <img
+        class="a4-canvas__background"
+        [src]="bg"
+        alt="Фон A4"
+      />
+    }
+
+    <!-- Оверлеи поверх фона -->
+    @if (page(); as pg) {
+      @for (overlay of pg.overlays; track overlay.id) {
+        <app-overlay-renderer
+          [overlay]="overlay"
+          [data]="data()"
+        />
+      }
+    }
+  </div>
+</div>

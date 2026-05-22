@@ -84,7 +84,7 @@ export async function getAll(filters?: {
 
 export async function getById(id: string): Promise<IKp> {
   const doc = await KpModel.findById(id);
-  if (!doc) throw new NotFoundError('Kp', id);
+  if (!doc) throw new NotFoundError('КП', id);
   return toJSON(doc);
 }
 
@@ -101,7 +101,7 @@ export async function create(data: {
   createdBy: string;
 }): Promise<IKp> {
   if (!data.title || !data.recipient || !data.companySnapshot) {
-    throw new ValidationError('title, recipient, and companySnapshot are required');
+    throw new ValidationError('title, recipient и companySnapshot обязательны для заполнения');
   }
 
   const number = await generateNumber(data.kpType || 'standard');
@@ -165,9 +165,9 @@ export async function update(
   }>,
 ): Promise<IKp> {
   const existing = await KpModel.findById(id);
-  if (!existing) throw new NotFoundError('Kp', id);
+  if (!existing) throw new NotFoundError('КП', id);
   if (existing.status !== 'draft') {
-    throw new ForbiddenError('Only draft KPs can be edited');
+    throw new ForbiddenError('Редактировать можно только черновики КП');
   }
 
   const updateData: any = { ...data };
@@ -182,25 +182,25 @@ export async function update(
   }
 
   const doc = await KpModel.findByIdAndUpdate(id, { $set: updateData }, { new: true, runValidators: true });
-  if (!doc) throw new NotFoundError('Kp', id);
+  if (!doc) throw new NotFoundError('КП', id);
   return toJSON(doc);
 }
 
 export async function remove(id: string): Promise<void> {
   const doc = await KpModel.findByIdAndDelete(id);
-  if (!doc) throw new NotFoundError('Kp', id);
+  if (!doc) throw new NotFoundError('КП', id);
 }
 
 // ---- Status transitions ----
 
 export async function changeStatus(id: string, newStatus: KpStatus, userId: string): Promise<IKp> {
   const doc = await KpModel.findById(id);
-  if (!doc) throw new NotFoundError('Kp', id);
+  if (!doc) throw new NotFoundError('КП', id);
 
   const currentStatus = doc.status as KpStatus;
   const allowed = KP_STATUS_TRANSITIONS[currentStatus] ?? [];
   if (!allowed.includes(newStatus)) {
-    throw new ValidationError(`Cannot transition from '${currentStatus}' to '${newStatus}'`);
+    throw new ValidationError(`Невозможно перевести из статуса '${currentStatus}' в '${newStatus}'`);
   }
 
   const newVersion = {
@@ -223,7 +223,7 @@ export async function changeStatus(id: string, newStatus: KpStatus, userId: stri
   );
 
   if (!updated) {
-    throw new ConflictError('Status was already changed by another user. Refresh the page and retry.');
+    throw new ConflictError('Статус уже изменён другим пользователем. Обновите страницу и повторите.');
   }
 
   return toJSON(updated);
@@ -233,7 +233,7 @@ export async function changeStatus(id: string, newStatus: KpStatus, userId: stri
 
 export async function recalculate(id: string): Promise<{ totalAmount: number; items: IKpItem[] }> {
   const doc = await KpModel.findById(id);
-  if (!doc) throw new NotFoundError('Kp', id);
+  if (!doc) throw new NotFoundError('КП', id);
 
   const items = doc.items.map((item) => ({
     ...item,

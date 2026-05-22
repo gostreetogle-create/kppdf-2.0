@@ -49,7 +49,7 @@ async function toUserJSON(doc: IUserDocument): Promise<IUser> {
 export async function register(data: { username: string; email: string; password: string; displayName: string; role?: UserRole }): Promise<ILoginResponse> {
   const existing = await UserModel.findOne({ $or: [{ username: data.username }, { email: data.email }] });
   if (existing) {
-    throw new AppError(409, 'Username or email already exists');
+    throw new AppError(409, 'Пользователь с таким логином или email уже существует');
   }
 
   const passwordHash = await hashPassword(data.password);
@@ -66,10 +66,10 @@ export async function register(data: { username: string; email: string; password
 
 export async function login(data: ILoginRequest): Promise<ILoginResponse> {
   const user = await UserModel.findOne({ username: data.username }).select('+passwordHash');
-  if (!user) throw new UnauthorizedError('Invalid credentials');
+  if (!user) throw new UnauthorizedError('Неверный логин или пароль');
 
   const valid = await user.comparePassword(data.password);
-  if (!valid) throw new UnauthorizedError('Invalid credentials');
+  if (!valid) throw new UnauthorizedError('Неверный логин или пароль');
 
   await UserModel.findByIdAndUpdate(user._id, { lastLoginAt: new Date().toISOString() });
   return { user: await toUserJSON(user), tokens: generateTokens(user) };
@@ -77,7 +77,8 @@ export async function login(data: ILoginRequest): Promise<ILoginResponse> {
 
 export async function getMe(userId: string): Promise<IUser> {
   const user = await UserModel.findById(userId);
-  if (!user) throw new AppError(404, 'User not found');
+  if (!user) throw new AppError(404, 'Пользователь не найден');
+
   return await toUserJSON(user);
 }
 
@@ -86,11 +87,11 @@ export async function refreshAccessToken(refreshToken: string): Promise<IAuthTok
   try {
     payload = jwt.verify(refreshToken, config.jwt.secret) as { sub: string };
   } catch {
-    throw new UnauthorizedError('Invalid refresh token');
+    throw new UnauthorizedError('Недействительный токен обновления');
   }
 
   const user = await UserModel.findById(payload.sub);
-  if (!user) throw new UnauthorizedError('User not found');
+  if (!user) throw new UnauthorizedError('Пользователь не найден');
 
   return generateTokens(user);
 }

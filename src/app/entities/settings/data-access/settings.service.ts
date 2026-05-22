@@ -54,7 +54,59 @@ export class SettingsService {
     catch { return raw.split(',').map((s: string) => s.trim()).filter(Boolean); }
   });
 
+  /** Категории товаров — из настройки product_categories */
+  readonly categories: Signal<CategoryDef[]> = computed(() => {
+    const state = this._items();
+    const setting = state.data?.find((s) => s.key === 'product_categories');
+    if (!setting) return DEFAULT_CATEGORIES;
+    const raw = String(setting.value);
+    try { return JSON.parse(raw); }
+    catch { return DEFAULT_CATEGORIES; }
+  });
+
   update(key: string, value: unknown): Observable<void> {
     return this.api.patch('/settings', key, { value }).pipe(map(() => { this.reload(); }));
   }
 }
+
+export interface SubcategoryDef {
+  id: string;
+  name: string;
+}
+
+export interface CategoryDef {
+  id: string;
+  name: string;
+  subcategories: SubcategoryDef[];
+}
+
+/** Сгенерировать короткий URL-safe ID из названия */
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-zа-яё0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .substring(0, 40);
+}
+
+const DEFAULT_CATEGORIES: CategoryDef[] = [
+  { id: 'oborudovanie', name: 'Оборудование', subcategories: [
+    { id: 'stanki', name: 'Станки' }, { id: 'instrument', name: 'Инструмент' }, { id: 'izmeritelnoe', name: 'Измерительное' },
+    { id: 'kompressory', name: 'Компрессоры' }, { id: 'nasosy', name: 'Насосы' }, { id: 'prochee-oborud', name: 'Прочее' },
+  ]},
+  { id: 'raskhodnye-materialy', name: 'Расходные материалы', subcategories: [
+    { id: 'kantselyariya', name: 'Канцелярия' }, { id: 'khoztovary', name: 'Хозтовары' }, { id: 'smazochnye', name: 'Смазочные материалы' },
+    { id: 'filtry', name: 'Фильтры' }, { id: 'prochee-raskh', name: 'Прочее' },
+  ]},
+  { id: 'uslugi', name: 'Услуги', subcategories: [
+    { id: 'montazh', name: 'Монтаж' }, { id: 'naladka', name: 'Наладка' }, { id: 'remont', name: 'Ремонт' },
+    { id: 'obsluzhivanie', name: 'Обслуживание' }, { id: 'konsultatsiya', name: 'Консультация' }, { id: 'prochee-usl', name: 'Прочее' },
+  ]},
+  { id: 'programmnoe-obespechenie', name: 'Программное обеспечение', subcategories: [
+    { id: 'litsenzii', name: 'Лицензии' }, { id: 'podpiski', name: 'Подписки' }, { id: 'razrabotka', name: 'Разработка' },
+    { id: 'integratsiya', name: 'Интеграция' }, { id: 'prochee-po', name: 'Прочее' },
+  ]},
+  { id: 'prochee', name: 'Прочее', subcategories: [
+    { id: 'prochee-proch', name: 'Прочее' },
+  ]},
+];

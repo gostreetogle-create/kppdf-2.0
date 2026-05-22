@@ -34,7 +34,7 @@ export async function getAll(
 
 export async function getById(id: string): Promise<IOrderDocument> {
   const doc = await OrderModel.findById(id);
-  if (!doc) throw new NotFoundError('Order', id);
+  if (!doc) throw new NotFoundError('Заказ', id);
   return doc;
 }
 

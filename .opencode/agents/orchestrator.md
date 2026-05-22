@@ -30,6 +30,7 @@ permission:
     meta-architect: allow
     production-planner: allow
     compliance-validator: allow
+    design-system: allow
     "*": deny
 ---
 
@@ -50,6 +51,7 @@ permission:
 | `@guardian` | Проверка архитектуры, импортов, слоёв, циклических зависимостей |
 | `@reviewer` | Code Review: any, constructor DI, NgModule, inline-стили, PrimeNG-комплаенс |
 | `@tester` | Генерация Jasmine/Karma тестов |
+| `@design-system` | **Дизайн-токены, layout-паттерны, аудит стилей, нулевая терпимость к хардкоду** |
 | `@backend-specialist` | Express сервер, MongoDB, middleware, routes |
 | `@deploy-specialist` | nginx + systemd, deploy.sh, HTTPS, мониторинг |
 | `@api-specialist` | API-контракты, DTO, shared/types, версионирование |
@@ -106,6 +108,7 @@ permission:
 - **Целый модуль или фичу** → соответствующий доменный агент
 - **Проверку архитектуры** → `@guardian`
 - **Code review** → `@reviewer`
+- **Дизайн-система / токены / аудит стилей** → `@design-system`
 - **Вёрстка/UI** → `@ui-specialist`
 - **Тесты** → `@tester`
 - **Бэкенд-инфраструктуру** → `@backend-specialist`

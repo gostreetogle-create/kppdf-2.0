@@ -6,8 +6,10 @@ export type { IEntityStatus };
 export const ENTITY_STATUS_TYPES: { value: EntityType; label: string }[] = [
   { value: 'ORDER', label: 'Заказы' },
   { value: 'ORDER_ITEM', label: 'Позиции заказа' },
-  { value: 'WORK_TASK', label: 'Задачи' },
+  { value: 'WORK_TASK', label: 'Производственные задания' },
   { value: 'MATERIAL_REQUEST', label: 'Заявки на материалы' },
+  { value: 'KP', label: 'Коммерческие предложения' },
+  { value: 'PRODUCT', label: 'Товары' },
 ];
 
-export type EntityType = 'ORDER' | 'ORDER_ITEM' | 'WORK_TASK' | 'MATERIAL_REQUEST';
+export type EntityType = 'ORDER' | 'ORDER_ITEM' | 'WORK_TASK' | 'MATERIAL_REQUEST' | 'KP' | 'PRODUCT';

@@ -19,6 +19,6 @@ export async function checkRequirements(req: Request, res: Response): Promise<vo
 export async function getCheckById(req: Request, res: Response): Promise<void> {
   const id = req.params.id as string;
   const data = await complianceService.getCheckById(id);
-  if (!data) { res.status(404).json({ error: { message: 'Check not found' } }); return; }
+  if (!data) { res.status(404).json({ error: { message: 'Проверка не найдена' } }); return; }
   res.json({ data });
 }

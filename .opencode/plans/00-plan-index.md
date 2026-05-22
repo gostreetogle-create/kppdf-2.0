@@ -1,6 +1,7 @@
 # KPPDF 2.0 — ПОЛНЫЙ ПЛАН РЕАЛИЗАЦИИ
 
-> Если связь прервалась — скажи номер шага, и продолжаем.
+> **🗺️ Актуальный чеклист:** [`checklist-current.md`](checklist-current.md) — что делать прямо сейчас, по приоритетам.
+> Если связь прервалась — скажи номер пункта из чеклиста, и продолжаем.
 
 ---
 
@@ -64,6 +65,46 @@
 [x] E3: deploy/ — nginx + systemd + deploy.sh
 [x] E4: Обновить opencode.json (агенты + инструкции) ✅
 ```
+
+---
+
+### Этап F: Приоритетные доработки
+```
+[_] P1: resyncFromCategory() — синхронизация спецификации с категорией (meta-architect)
+[_] P1: DynamicAttrForm → API — привязать форму атрибутов к spec API (ui-specialist)
+[_] P1: BOMTreeEditor → API — сохранение/удаление BOM-узлов через бэкенд (ui-specialist)
+[_] P2: Role → ObjectId — User.role перевести на _id вместо name (role-specialist)
+[_] P2: WorkType stable code — добавить code полю, искать не по name (role-specialist)
+[_] P2: JWT по коду — проверять права по stable-коду, не name (auth-specialist)
+[_] P3: Delete guard — проверка зависимостей перед удалением сущности (guardian)
+```
+
+### Этап G: End-to-end сценарии
+```
+[_] G1: Полный цикл КП через UI → PDF (kp + ui + pdf)
+[_] G2: Заказы (Orders, OrderItem) — lifecycle, канбан (order-specialist)
+[_] G3: Производство (WorkTask, MaterialRequest) — наряды, склад (work + material)
+[_] G4: Диаграммы Ганта — планирование, сроки, ресурсы (gantt-specialist)
+[_] G5: Compliance Dashboard — проверка изделий на соответствие (compliance-validator)
+```
+
+### Этап H: Универсальный редактор документов (CURRENT)
+```
+[x] H0: Проектирование архитектуры (orchestrator)
+[_] H1: shared/types — DocumentTemplate, OverlayDef, Document (api-specialist + meta-architect)
+[_] H2: Backend — DocumentTemplate + Document CRUD, загрузка фонов (backend-specialist)
+[_] H3: Frontend — DocumentEditorPage + CanvasA4 + OverlaySystem (ui-specialist + pdf-specialist)
+[_] H4: Интеграция с KP — подстановка данных КП в шаблон (kp-specialist)
+[_] H5: Интеграция с Договорами — подстановка данных договора (order-specialist / counterparty-specialist)
+[_] H6: Экспорт в PDF — генерация финального PDF из редактора (pdf-specialist)
+```
+
+**Ключевые архитектурные решения Этапа H:**
+- **Path Resolver** — маппер, строящий плоский `Record<string,any>` из любого entity (KP/Contract/Spec) для универсальной подстановки в оверлеи
+- **Overflow Handling** — таблицы с `pageBreak:'auto'` автоматически создают новые А4-страницы с дублированием фона
+- **Conditional Visibility** — `visibilityCondition` для показа/скрытия блоков (`"spec.has_ramp == true"`)
+- **Snapshot Freeze** — при экспорте в PDF данные замораживаются в `IDocument.data`, редактирование блокируется
+- **QR-коды** — `type:'qrcode'` в IOverlayDef, реализация опционально
 
 ---
 

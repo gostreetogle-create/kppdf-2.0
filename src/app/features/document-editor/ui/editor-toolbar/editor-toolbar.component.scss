@@ -1,0 +1,45 @@
+.editor-toolbar {
+  &__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-left: 12px;
+  }
+
+  &__badge {
+    margin-left: 12px;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    &--draft {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    &--final {
+      background: #d1fae5;
+      color: #065f46;
+    }
+  }
+
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 16px;
+  }
+
+  &__page-info {
+    font-size: 0.875rem;
+    color: #64748b;
+    min-width: 48px;
+    text-align: center;
+  }
+}
+
+::ng-deep .p-toolbar {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+}

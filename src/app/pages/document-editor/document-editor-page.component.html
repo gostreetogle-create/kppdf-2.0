@@ -1,0 +1,36 @@
+@if (editorSvc.loading()) {
+  <div class="document-editor__loading">
+    <p-progressSpinner />
+    <p class="document-editor__loading-text">Загрузка документа...</p>
+  </div>
+} @else {
+  @if (!editorSvc.document()) {
+    <div class="document-editor__empty">
+      <p-message
+        severity="warn"
+        text="Не удалось загрузить документ. Проверьте параметры или выберите шаблон."
+      />
+    </div>
+  } @else {
+    @let doc = editorSvc.document()!;
+    @let currentPage = editorSvc.currentPage();
+    @let totalPages = editorSvc.totalPages();
+
+    <app-editor-toolbar
+      [docTitle]="doc.templateName"
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [status]="doc.status"
+      (pageChange)="onPageChange($event)"
+      (save)="onSave()"
+      (finalize)="onFinalize()"
+      (back)="onBack()"
+    />
+
+    <app-a4-canvas
+      [backgroundImage]="editorSvc.backgroundImage()"
+      [page]="editorSvc.currentPageDef()"
+      [data]="doc.data"
+    />
+  }
+}

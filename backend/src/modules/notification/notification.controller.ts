@@ -5,7 +5,7 @@ import * as notifService from './notification.service';
 export function sse(req: Request, res: Response): void {
   const userId = (req as any).user?.sub;
   if (!userId) {
-    res.status(401).json({ error: 'Unauthorized' });
+    res.status(401).json({ error: 'Не авторизован' });
     return;
   }
   res.writeHead(200, {

@@ -43,7 +43,7 @@ export async function remove(req: Request, res: Response, next: NextFunction): P
     const filePath = path.join(UPLOADS_DIR, safeName);
 
     if (!fs.existsSync(filePath)) {
-      res.status(404).json({ error: { message: 'File not found', code: 'FILE_NOT_FOUND' } });
+      res.status(404).json({ error: { message: 'Файл не найден', code: 'FILE_NOT_FOUND' } });
       return;
     }
 

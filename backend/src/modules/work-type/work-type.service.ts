@@ -10,7 +10,7 @@ export async function create(data: Partial<IWorkTypeDocument>): Promise<IWorkTyp
 
 export async function update(name: string, data: Partial<IWorkTypeDocument>): Promise<IWorkTypeDocument> {
   const doc = await WorkTypeModel.findOne({ name });
-  if (!doc) throw new Error('WorkType not found');
+  if (!doc) throw new Error('Тип работы не найден');
   Object.assign(doc, data);
   return doc.save();
 }

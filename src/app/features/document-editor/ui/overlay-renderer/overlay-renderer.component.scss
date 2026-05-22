@@ -1,0 +1,45 @@
+.overlay-renderer {
+  position: absolute;
+  z-index: 2;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  &--text {
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.3;
+  }
+
+  &--table {
+    overflow: auto;
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: inherit;
+
+    th, td {
+      padding: 2px 4px;
+      border: 1px solid #ccc;
+    }
+
+    th {
+      background: #f8f9fa;
+      font-weight: 600;
+    }
+  }
+
+  &--image {
+    object-fit: contain;
+  }
+
+  &--qrcode {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    font-size: 10px;
+    color: #666;
+  }
+}

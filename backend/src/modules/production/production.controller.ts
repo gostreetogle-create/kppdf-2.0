@@ -4,7 +4,7 @@ import { productionService } from './production.service';
 /** GET /production/plan/:orderId */
 export async function getPlanByOrder(req: Request, res: Response): Promise<void> {
   const data = await productionService.getPlanByOrder(req.params.orderId as string);
-  if (!data) { res.status(404).json({ error: { message: 'Plan not found' } }); return; }
+  if (!data) { res.status(404).json({ error: { message: 'План не найден' } }); return; }
   res.json({ data });
 }
 

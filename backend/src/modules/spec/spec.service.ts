@@ -78,7 +78,7 @@ export class SpecService {
    */
   async createSpec(productId: string, categoryId: string): Promise<string> {
     const category = await ProductCategoryModel.findById(categoryId).lean();
-    if (!category) throw new Error(`Category ${categoryId} not found`);
+    if (!category) throw new Error(`Категория ${categoryId} не найдена`);
 
     // PLM-1: Deep copy атрибутов из категории → attributeValues (ordered-стадия)
     const attributeValues = (category.attributeGroups ?? []).flatMap(group =>
@@ -132,14 +132,14 @@ export class SpecService {
    */
   async advanceLifecycle(specId: string): Promise<AdvanceLifecycleResult> {
     const spec = await ProductSpecModel.findById(specId);
-    if (!spec) throw new Error(`Spec ${specId} not found`);
+    if (!spec) throw new Error(`Спецификация ${specId} не найдена`);
 
     const currentStatus = spec.status as LifecycleStatus;
     const currentIdx = LIFECYCLE_FLOW.indexOf(currentStatus);
 
-    if (currentIdx === -1) throw new Error(`Unknown status: ${currentStatus}`);
+    if (currentIdx === -1) throw new Error(`Неизвестный статус: ${currentStatus}`);
     if (currentIdx >= LIFECYCLE_FLOW.length - 1) {
-      throw new Error(`Spec ${specId} is already at final stage: ${currentStatus}`);
+      throw new Error(`Спецификация ${specId} уже на финальной стадии: ${currentStatus}`);
     }
 
     const nextStatus = LIFECYCLE_FLOW[currentIdx + 1];
@@ -330,18 +330,18 @@ export class SpecService {
    */
   async removeBomNode(specId: string, nodeId: string): Promise<IComponentNode> {
     const spec = await ProductSpecModel.findById(specId);
-    if (!spec) throw new Error(`Spec ${specId} not found`);
-    if (!spec.bom) throw new Error('Spec has no BOM');
+    if (!spec) throw new Error(`Спецификация ${specId} не найдена`);
+    if (!spec.bom) throw new Error('Спецификация не содержит BOM');
 
     const bom = spec.bom as IComponentNode;
 
     // Корневой узел нельзя удалить
     if (bom.id === nodeId) {
-      throw new Error('Cannot remove root BOM node');
+      throw new Error('Нельзя удалить корневой узел BOM');
     }
 
     const found = this.removeNodeRecursive(bom, nodeId);
-    if (!found) throw new Error(`BOM node ${nodeId} not found`);
+    if (!found) throw new Error(`Узел BOM ${nodeId} не найден`);
 
     spec.bom = bom;
     await spec.save();

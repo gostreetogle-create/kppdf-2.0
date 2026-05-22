@@ -72,3 +72,22 @@ export type {
 export type {
   IProcessOp,
 } from './process.types';
+
+// ─── Document Engine (Этап H) ────────────────────────────────
+export type {
+  DocumentEntityType,
+  DocumentStatus,
+  OverlayType,
+  PageBreakMode,
+  OverlayTextAlign,
+  IOverlayStyle,
+  ITableColumnDef,
+  IOverlayDef,
+  IDocumentPage,
+  IDocumentTemplate,
+  IDocument,
+  IResolvedData,
+  CreateDocumentTemplateDto,
+  CreateDocumentDto,
+  UpdateDocumentDto,
+} from './document.types';

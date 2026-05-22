@@ -57,7 +57,7 @@ export class ApiService {
       }),
       catchError((err: HttpErrorResponse) => {
         const apiError: ApiError = {
-          message: err.error?.error?.message ?? err.message ?? 'Unknown error',
+          message: err.error?.error?.message ?? err.message ?? 'Неизвестная ошибка',
           code: err.error?.error?.code,
         };
         return throwError(() => apiError);

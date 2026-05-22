@@ -13,8 +13,8 @@ import { MessageModule } from 'primeng/message';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { ProductKind } from '../../entities/product/models/product.model';
-import { Product } from '../../entities/product/models/product.model';
+import { ProductKind, Product } from '../../entities/product/models/product.model';
+import type { IProduct } from '../../shared/types/product.interface';
 import { ProductService } from '../../entities/product/data-access/product.service';
 import {
   ProductFormDialogComponent,
@@ -98,9 +98,19 @@ export class ProductListFeatureComponent {
     this.saving.set(true);
     const product = this.editingProduct();
 
+    // Маппинг из ProductFormValue → IProduct
+    const data: Partial<IProduct> = {
+      name: value.name,
+      sku: value.code || value.name,
+      kind: value.kind,
+      categoryId: value.categoryId || '',
+      specId: '',
+      status: value.isActive ? 'active' : 'draft',
+    };
+
     const request$ = product
-      ? this.productService.update(product.id, value)
-      : this.productService.create(value);
+      ? this.productService.update(product.id, data)
+      : this.productService.create(data);
 
     request$.pipe(
       map(() => true),
@@ -127,16 +137,13 @@ export class ProductListFeatureComponent {
 
   // ---- Дублирование ----
   onDuplicate(product: Product): void {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { _id, id, createdAt, updatedAt, ...rest } = product;
-    const duplicate: ProductFormValue = {
-      ...rest,
-      name: `${rest.name} (копия)`,
-      images: rest.images ?? [],
-      code: rest.code ?? '',
-      category: rest.category ?? '',
-      subcategory: rest.subcategory ?? '',
-      components: rest.components ?? [],
+    const duplicate: Partial<IProduct> = {
+      name: `${product.name} (копия)`,
+      sku: `${product.sku}_copy`,
+      categoryId: product.categoryId,
+      specId: product.specId,
+      kind: product.kind,
+      status: 'draft',
     };
 
     this.productService.create(duplicate).subscribe({

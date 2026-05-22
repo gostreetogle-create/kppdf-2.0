@@ -30,13 +30,13 @@ export async function getAll(filters?: {
 
 export async function getById(id: string): Promise<ICounterparty> {
   const doc = await CounterpartyModel.findById(id);
-  if (!doc) throw new NotFoundError('Counterparty', id);
+  if (!doc) throw new NotFoundError('Контрагент', id);
   return toJSON(doc);
 }
 
 export async function create(data: Omit<ICounterparty, '_id' | 'createdAt' | 'updatedAt'>): Promise<ICounterparty> {
   if (!data.name || !data.legalForm) {
-    throw new ValidationError('name and legalForm are required');
+    throw new ValidationError('name и legalForm обязательны для заполнения');
   }
   const doc = await CounterpartyModel.create(data);
   return toJSON(doc);
@@ -44,13 +44,13 @@ export async function create(data: Omit<ICounterparty, '_id' | 'createdAt' | 'up
 
 export async function update(id: string, data: Partial<Omit<ICounterparty, '_id' | 'createdAt' | 'updatedAt'>>): Promise<ICounterparty> {
   const doc = await CounterpartyModel.findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true });
-  if (!doc) throw new NotFoundError('Counterparty', id);
+  if (!doc) throw new NotFoundError('Контрагент', id);
   return toJSON(doc);
 }
 
 export async function remove(id: string): Promise<void> {
   const doc = await CounterpartyModel.findByIdAndDelete(id);
-  if (!doc) throw new NotFoundError('Counterparty', id);
+  if (!doc) throw new NotFoundError('Контрагент', id);
 }
 
 export async function getOurCompanies(): Promise<ICounterparty[]> {
